@@ -1,21 +1,24 @@
-from flask import Flask, render_template #, redirect, url_for
+from flask import Flask, render_template, url_for, redirect
+from forms import RegisterForm, LoginForm
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'b18b7463547b20e1da73aeb67a7658d2'
 
 @app.route('/')
-def landing():
+def welcome():
     '''
-    Handles rendering of the landing page of the website.
+    Handles rendering of the landing page of the website. its the page the viewer first sees
 
-    This route renders the landing.html and returns it to be viewed.
+    This route renders the welcome.html and returns it to be viewed.
 
     Parameters:
-        none
+        None
 
     Returns:
         A rendered html
     '''
-    return render_template('landing.html')
+    page="Welcome"
+    return render_template('welcome.html', page=page)
 
 @app.route('/login')
 def login():
@@ -33,7 +36,9 @@ def login():
         or
         A redirect to the home page after a successful login
     '''
-    return render_template('login.html')
+    page="login"
+    form = LoginForm()
+    return render_template('login.html', page=page, form=form)
 
 @app.route('/register')
 def register():
@@ -51,7 +56,9 @@ def register():
         or
         A redirect to the home page after a successful login
     '''
-    return render_template('register.html')
+    page="register"
+    form = RegisterForm()
+    return render_template('register.html', page=page)
 
 @app.route('/home')
 def home():
@@ -68,7 +75,8 @@ def home():
     Returns:
         A rendered html
     '''
-    return render_template('home.html')
+    page = "home"
+    return render_template('home.html', page=page)
 
 @app.route('/settings')
 def settings():
@@ -85,7 +93,8 @@ def settings():
     Returns:
         A rendered html
     '''
-    return render_template('settings.html')
+    page = "settings"
+    return render_template('settings.html', page=page)
 
 world_name = "example_name"
 @app.route(f'/{world_name}')

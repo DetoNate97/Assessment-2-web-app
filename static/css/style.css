@@ -7,6 +7,48 @@ h1, h2, h3, h4, h5, h6 {
   color: #ffffff;
 }
 
+.page {
+  font-size: 20px;
+}
+
+.centred {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.welcomeprompt {
+  font-size: 40px;
+}
+
+.content {
+  color: rgb(85, 170, 182);
+}
+
+/* 
+  extending some of bootstrap's built in spacing utility classes to include larger spacings without using sass
+  incrementing by 1rem
+  
+  property
+  m - margin
+  p - padding
+
+  side
+    - all sides
+  t - top
+  b - bottom
+  s - start (normally left)
+  e - end (normally right)
+  x - horizontal
+  y - vertical
+
+  size
+  number = the size of the spacer
+*/
+.mt-6 {
+  margin-top: 4rem;
+}
 .mt-7 {
-  margin-top: 70px;
+  margin-top: 5rem;
 }
