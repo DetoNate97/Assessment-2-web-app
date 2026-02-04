@@ -23,7 +23,33 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .content {
-  color: rgb(85, 170, 182);
+  color: #0dcaf0;
+}
+
+.containerborder {
+  padding: 20px;
+  border-radius: 12px;
+  background: linear-gradient(#292929, #292929) padding-box,
+  linear-gradient(0deg, #180060 45%, #009fb1) border-box;
+  border: 6px solid transparent;
+}
+
+.form-floating label {
+  color: #ffffff;
+}
+
+.form-floating input {
+  background-color: #292929;
+  color: #ffffff
+}
+
+.form-floating input:focus {
+  background-color: #292929;
+  color: #ffffff
+}
+
+.button-padding {
+  padding-block: 10px
 }
 
 /* 

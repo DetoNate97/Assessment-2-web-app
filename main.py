@@ -1,8 +1,8 @@
-from flask import Flask, render_template, url_for, redirect
+from flask import Flask, render_template, url_for, redirect, flash
 from forms import RegisterForm, LoginForm
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'b18b7463547b20e1da73aeb67a7658d2'
+app.config['SECRET_KEY'] = 'b18b7463547b20e1da73aeb67a7658d2' # change
 
 @app.route('/')
 def welcome():
@@ -20,13 +20,12 @@ def welcome():
     page="Welcome"
     return render_template('welcome.html', page=page)
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     '''
     Handles rendering of the login page.
 
-    This route (shows a login form, validates the submitted form, logs in the user)<-later
-    renders the login.html and then returns it to be viewed.
+    This route renders the login.html, sends the form to the html, validates the submitted form, and logs in the user.
 
     Parameters:
         none
@@ -38,15 +37,24 @@ def login():
     '''
     page="login"
     form = LoginForm()
+    log_user = form.FloatingUsername.data
+    log_pass = form.FloatingPassword.data
+    print(log_user, log_pass, form.FloatingPassword())
+    if form.validate_on_submit():
+        print(log_user, log_pass, form.FloatingPassword())
+        flash('','danger')
+        # flash('','success')
+        return redirect(url_for('welcome'))
     return render_template('login.html', page=page, form=form)
 
-@app.route('/register')
+@app.route('/register', methods=['GET', 'POST'])
 def register():
     '''
     Handles rendering of the register page.
 
-    This route (shows a register form, validates the submitted form, creates a new user, logs in the user)<-later
-    renders the register.html and then returns it to be viewed.
+    This route shows a register form, validates the submitted form,
+    creates a new user, logs in the user, renders the register.html and then
+    returns it to be viewed.
 
     Parameters:
         none
@@ -58,7 +66,7 @@ def register():
     '''
     page="register"
     form = RegisterForm()
-    return render_template('register.html', page=page)
+    return render_template('register.html', page=page, form=form)
 
 @app.route('/home')
 def home():

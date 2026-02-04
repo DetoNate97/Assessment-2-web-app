@@ -13,7 +13,7 @@ class RegisterForm(FlaskForm):
     submit = SubmitField('Sign Up')
 
 class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
-    password = PasswordField('Password', validators=[DataRequired(), Length(min=2, max=20)])
-    remember = BooleanField('Remember Me')
-    submit = SubmitField('Login')
+    FloatingUsername = StringField('floatingUsername', validators=[DataRequired(), Length(min=2, max=20)], render_kw={"placeholder": ""})
+    FloatingPassword = PasswordField('FloatingPassword', validators=[DataRequired(), Length(min=2, max=20)], render_kw={"placeholder": ""})
+    # remember = BooleanField('Remember Me')
+    submit = SubmitField('Log In')
