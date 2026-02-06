@@ -2,10 +2,24 @@
 
 {% block content %}
 
-<div class="ms-5">
-    <p class="centred welcomeprompt">Log in to start creating worlds</p>
-</div>
+    <div class="ms-5">
+        <p class="centred welcomeprompt">Log in to start creating worlds</p>
+    </div>
 
 {% endblock content %}
+
+{% block navbar_right %}
+
+    <div class="red">
+        <a href="{{url_for('login')}}" class="me-2 link">log in</a>
+        or
+        <a href="{{url_for('register')}}" class="ms-2">
+            <div class="register-btn btn containerborder">
+                Register
+            </div>
+        </a>
+    </div>
+
+{% endblock navbar_right %}
 
 <!-- add an about/social links section to the bottom of this page, or at least a placeholder for it -->

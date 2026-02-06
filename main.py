@@ -3,13 +3,13 @@ from forms import RegisterForm, LoginForm
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'b18b7463547b20e1da73aeb67a7658d2' # change
+current_user = ""
 
 @app.route('/')
 def welcome():
     '''
     Handles rendering of the landing page of the website. its the page the viewer first sees
-
-    This route renders the welcome.html and returns it to be viewed.
+    renders the welcome.html and returns it to be viewed.
 
     Parameters:
         None
@@ -17,15 +17,13 @@ def welcome():
     Returns:
         A rendered html
     '''
-    page="Welcome"
-    return render_template('welcome.html', page=page)
+    return render_template('welcome.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     '''
     Handles rendering of the login page.
-
-    This route renders the login.html, sends the form to the html, validates the submitted form, and logs in the user.
+    renders the login.html, sends the form to the html, validates the submitted form, and logs in the user, saves the username to current_user.
 
     Parameters:
         none
@@ -35,26 +33,24 @@ def login():
         or
         A redirect to the home page after a successful login
     '''
-    page="login"
+    global current_user
+    page = "Log In"
     form = LoginForm()
-    log_user = form.FloatingUsername.data
-    log_pass = form.FloatingPassword.data
-    print(log_user, log_pass, form.FloatingPassword())
+    log_user, log_pass, fields = form.FloatingUsername.data, form.FloatingPassword.data, form.fields
+    current_user = log_user
     if form.validate_on_submit():
-        print(log_user, log_pass, form.FloatingPassword())
+        print(log_user, log_pass)
+        flash('','success')
+        return redirect(url_for('home'))
+    else:
         flash('','danger')
-        # flash('','success')
-        return redirect(url_for('welcome'))
-    return render_template('login.html', page=page, form=form)
+    return render_template('login.html', page=page, form=form, fields=fields)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     '''
     Handles rendering of the register page.
-
-    This route shows a register form, validates the submitted form,
-    creates a new user, logs in the user, renders the register.html and then
-    returns it to be viewed.
+    renders the register.html, sends the form to the html, validates the submitted form, adds the new user to the database, and logs in the user.
 
     Parameters:
         none
@@ -64,9 +60,18 @@ def register():
         or
         A redirect to the home page after a successful login
     '''
-    page="register"
+    global current_user
+    page="Register"
     form = RegisterForm()
-    return render_template('register.html', page=page, form=form)
+    reg_user, reg_email, reg_pass = form.FloatingUsername.data, form.FloatingEmail.data, form.FloatingPassword.data
+    current_user = reg_user
+    if form.validate_on_submit():
+        print(reg_user, reg_pass, reg_email)
+        flash('','success')
+        return redirect(url_for('home'))
+    else:
+        flash('','danger')
+    return render_template('register.html', page=page, form=form, fields=form.fields)
 
 @app.route('/home')
 def home():
@@ -83,8 +88,9 @@ def home():
     Returns:
         A rendered html
     '''
+    global current_user
     page = "home"
-    return render_template('home.html', page=page)
+    return render_template('home.html', page=page, user=current_user)
 
 @app.route('/settings')
 def settings():

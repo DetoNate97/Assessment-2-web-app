@@ -29,8 +29,7 @@ h1, h2, h3, h4, h5, h6 {
 .containerborder {
   padding: 20px;
   border-radius: 12px;
-  background: linear-gradient(#292929, #292929) padding-box,
-  linear-gradient(0deg, #180060 45%, #009fb1) border-box;
+  background: linear-gradient(#292929, #292929) padding-box, linear-gradient(0deg, #180060 45%, #009fb1) border-box;
   border: 6px solid transparent;
 }
 
@@ -49,7 +48,43 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .button-padding {
-  padding-block: 10px
+  padding-block: 7px
+}
+
+.link {
+  color: #ffffff;
+  text-decoration: none
+}
+
+.link:hover {
+  color: #ffffff;
+  text-decoration: underline
+}
+
+.link:active {
+  color: #ffffff;
+  text-decoration: none
+}
+
+.register-btn {
+  padding: 8px;
+  border: 4px solid transparent;
+  color: #e0e0e0
+}
+
+.register-btn:hover {
+  padding: 8px;
+  border: 4px solid transparent;
+  background: linear-gradient(#393939, #303030) padding-box, linear-gradient(0deg, #220070 45%, #10afc1) border-box;
+  color: #ffffff;
+}
+
+/* not sure why this needs to be :first-child:active instead of :active but it works ¯\_(ツ)_/¯ */
+.register-btn:first-child:active { 
+  padding: 8px;
+  border: 4px solid transparent;
+  background: linear-gradient(#292929, #292929) padding-box, linear-gradient(0deg, #180060 45%, #009fb1) border-box;
+  color: #ffffff;
 }
 
 /* 
