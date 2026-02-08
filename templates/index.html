@@ -9,6 +9,10 @@
     <link rel="stylesheet" type="text/css" href="/static/css/style.css"> 
     <!-- css styles -->
 
+    <!-- js -->
+    <script src="/static/js/test.js" defer></script>
+    <!-- js -->
+
     {% if page %}
     <title>Arcane - {{page}} </title>
     {% else %}
@@ -43,6 +47,20 @@
                 {% endblock navbar_right %}
             </div>
         </nav>
+    </header>
+    <header id="hide" class="site-header">
+        <div class="fixed-top alertmargin">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{category}} container-fluid">
+                            {{message}} <a href="{{url_for('welcome')}}" class="close">close</a>
+                            <button type="button" onclick="hide()">close</button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
     </header>
     
     <!-- main content -->

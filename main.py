@@ -1,14 +1,45 @@
 from flask import Flask, render_template, url_for, redirect, flash
 from forms import RegisterForm, LoginForm
+import os
+import sqlite3
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'b18b7463547b20e1da73aeb67a7658d2' # change
 current_user = ""
 
+# database file path
+db_path = os.path.join("assessment files", "assessment 2", "Assessment-2-web-app", "database", "database.db") # change if required.
+
+# connect to the database. 
+try:
+    db = sqlite3.connect(db_path, check_same_thread=False) # "check_same_thread=False" used from assessment 1
+    print(f"Connected")
+except sqlite3.OperationalError as error:
+    print(f"Error: {error}")
+
+def login():
+    global db, user_username
+    form = LoginForm()
+    log_user = form.username.data
+    log_pass = form.password.data
+    if form.validate_on_submit():
+        db_password = db.execute(f"SELECT password FROM Accounts WHERE username = ?", (form.username.data,)).fetchone() # retrieve user password from db
+        if db_password == None: # check password is not null
+            flash(f'Failed to log in, user {log_user} does not exist', 'danger')
+        else:
+            check_pass = db_password[0] # get the password out of the tuple
+            if check_pass == log_pass: # compare against entered password
+                flash(f'Successfully logged in user {log_user}!', 'success')
+                user_username = log_user # save username
+                return redirect(url_for('home'))
+            else:
+                flash(f'Failed to log in, check username and password.', 'danger')
+    return render_template('login.html', form=form, page="Login")
+
 @app.route('/')
 def welcome():
     '''
-    Handles rendering of the landing page of the website. its the page the viewer first sees
+    Handles rendering of the landing page of the website. its the page the viewer first sees.
     renders the welcome.html and returns it to be viewed.
 
     Parameters:
@@ -33,17 +64,24 @@ def login():
         or
         A redirect to the home page after a successful login
     '''
-    global current_user
+    global current_user, db
     page = "Log In"
     form = LoginForm()
     log_user, log_pass, fields = form.FloatingUsername.data, form.FloatingPassword.data, form.fields
     current_user = log_user
+
     if form.validate_on_submit():
-        print(log_user, log_pass)
-        flash('','success')
-        return redirect(url_for('home'))
-    else:
-        flash('','danger')
+        db_password = db.execute(f"SELECT password FROM Users WHERE username = ?", (form.FloatingUsername.data,)).fetchone()
+        if not db_password:
+            flash(f'Failed to log in, user {log_user} does not exist', 'danger')
+        else:
+            db_password = db_password[0]
+            if db_password == log_pass:
+                flash(f'Successfully logged in user {log_user}!', 'success')
+                current_user = log_user
+                return redirect(url_for('home'))
+            else:
+                flash(f'failed to log in, check username and password.', 'danger')
     return render_template('login.html', page=page, form=form, fields=fields)
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -60,17 +98,19 @@ def register():
         or
         A redirect to the home page after a successful login
     '''
-    global current_user
+    global current_user, db
     page="Register"
     form = RegisterForm()
     reg_user, reg_email, reg_pass = form.FloatingUsername.data, form.FloatingEmail.data, form.FloatingPassword.data
     current_user = reg_user
     if form.validate_on_submit():
-        print(reg_user, reg_pass, reg_email)
-        flash('','success')
+        flash(f'Account created for {form.FloatingUsername.data}!', 'success')
+        cursor = db.cursor()
+        cursor.execute("INSERT INTO Users (username, email, password) VALUES (?, ?, ?)", (f"{reg_user}", f"{reg_email}", f"{reg_pass}")) # save new user to db
+        # cursor.execute(f"CREATE TABLE User_{reg_user}_Worlds (id INTEGER PRIMARY KEY AUTOINCREMENT, account_holder TEXT NOT NULL, account_name TEXT NOT NULL, balance INTEGER)") # create a new table for the user's worlds
+        db.commit()
+        current_user = reg_user
         return redirect(url_for('home'))
-    else:
-        flash('','danger')
     return render_template('register.html', page=page, form=form, fields=form.fields)
 
 @app.route('/home')
