@@ -9,6 +9,21 @@ current_user = ""
 
 # database file path
 db_path = os.path.join("assessment files", "assessment 2", "Assessment-2-web-app", "database", "database.db") # change if required.
+'''
+the reason for this file path is because my venv is for my entire software folder:
+
+Software
+|__ assessment files
+    |__ Assessment 1
+    |__ Assessment 2
+        |__ Assessment-2-web-app
+            |__ etc.
+|__ classwork
+
+if the venv set up for the Assessment-2-web-app folder, the filepath should just be this:
+db_path = os.path.join("database", "database.db")
+or change it to fit wherever your venv is.
+'''
 
 # connect to the database. 
 try:
@@ -16,25 +31,6 @@ try:
     print(f"Connected")
 except sqlite3.OperationalError as error:
     print(f"Error: {error}")
-
-def login():
-    global db, user_username
-    form = LoginForm()
-    log_user = form.username.data
-    log_pass = form.password.data
-    if form.validate_on_submit():
-        db_password = db.execute(f"SELECT password FROM Accounts WHERE username = ?", (form.username.data,)).fetchone() # retrieve user password from db
-        if db_password == None: # check password is not null
-            flash(f'Failed to log in, user {log_user} does not exist', 'danger')
-        else:
-            check_pass = db_password[0] # get the password out of the tuple
-            if check_pass == log_pass: # compare against entered password
-                flash(f'Successfully logged in user {log_user}!', 'success')
-                user_username = log_user # save username
-                return redirect(url_for('home'))
-            else:
-                flash(f'Failed to log in, check username and password.', 'danger')
-    return render_template('login.html', form=form, page="Login")
 
 @app.route('/')
 def welcome():
@@ -130,7 +126,12 @@ def home():
     '''
     global current_user
     page = "home"
-    return render_template('home.html', page=page, user=current_user)
+    if not current_user:
+        return redirect(url_for("login"))
+    else:
+        return render_template('home.html', page=page, user=current_user)
+    
+    
 
 @app.route('/settings')
 def settings():

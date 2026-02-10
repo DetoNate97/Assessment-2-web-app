@@ -48,14 +48,16 @@
             </div>
         </nav>
     </header>
+
+    <!-- flash messages -->
     <header id="hide" class="site-header">
         <div class="fixed-top alertmargin">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
                         <div class="alert alert-{{category}} container-fluid">
-                            {{message}} <a href="{{url_for('welcome')}}" class="close">close</a>
-                            <button type="button" onclick="hide()">close</button>
+                            {{message}}
+                            <button type="button" class="close-btn" onclick="hide()">close</button>
                         </div>
                     {% endfor %}
                 {% endif %}
