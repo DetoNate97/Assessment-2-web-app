@@ -8,21 +8,9 @@ app.config['SECRET_KEY'] = 'b18b7463547b20e1da73aeb67a7658d2' # change
 current_user = ""
 
 # database file path
-db_path = os.path.join("assessment files", "assessment 2", "Assessment-2-web-app", "database", "database.db") # change if required.
+db_path = os.path.join("database", "database.db") # change if required.
 '''
-the reason for this file path is because my venv is for my entire software folder:
-
-Software
-|__ assessment files
-    |__ Assessment 1
-    |__ Assessment 2
-        |__ Assessment-2-web-app
-            |__ etc.
-|__ classwork
-
-if the venv set up for the Assessment-2-web-app folder, the filepath should just be this:
-db_path = os.path.join("database", "database.db")
-or change it to fit wherever your venv is.
+change path to fit venv location
 '''
 
 # connect to the database. 
@@ -50,7 +38,7 @@ def welcome():
 def login():
     '''
     Handles rendering of the login page.
-    renders the login.html, sends the form to the html, validates the submitted form, and logs in the user, saves the username to current_user.
+    renders the login.html, sends the form to the html, validates the submitted form, logs in the user, saves the username to current_user.
 
     Parameters:
         none
@@ -84,7 +72,7 @@ def login():
 def register():
     '''
     Handles rendering of the register page.
-    renders the register.html, sends the form to the html, validates the submitted form, adds the new user to the database, and logs in the user.
+    renders the register.html, sends the form to the html, validates the submitted form, adds the new user to the database, logs in the user, saves the username to current_user.
 
     Parameters:
         none
@@ -112,26 +100,23 @@ def register():
 @app.route('/home')
 def home():
     '''
-    Handles rendering of the home page.
-    (slightly inspired by google docs)
-
-    This route (idk)<-later
-    renders the home.html and then returns it to be viewed.
+    Handles rendering of the home page. slightly inspired by google docs. 
+    renders the home.html, checks if current_user exists, and redirects to login
 
     Parameters:
         none
 
     Returns:
         A rendered html
+        or
+        A redirect to login if there is no current_user
     '''
     global current_user
     page = "home"
     if not current_user:
         return redirect(url_for("login"))
     else:
-        return render_template('home.html', page=page, user=current_user)
-    
-    
+        return render_template('home.html', page=page, user=current_user)    
 
 @app.route('/settings')
 def settings():

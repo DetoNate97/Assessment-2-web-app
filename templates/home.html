@@ -2,7 +2,60 @@
 
 {% block content %}
 
-    welcome {{user}}!
+    <h1>Welcome {{user}}!</h1>
+    <h2 class="mt-4">Create New:</h2>
+
+    <div class="row align-items-start">
+        <button class="card m-1" data-bs-toggle="modal" data-bs-target="#CustomSelectModal">Custom</button>
+        <button class="card m-1" data-bs-toggle="modal" data-bs-target="#exampleModal1">Book</button>
+        <button class="card m-1" data-bs-toggle="modal" data-bs-target="#exampleModal2">Movie</button>
+        <button class="card m-1" data-bs-toggle="modal" data-bs-target="#exampleModal3">Game</button>
+    </div>
+    <h2>Your Creations:</h2>
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+        Launch demo modal
+    </button>
+
+    <!-- Modal -->
+    <div class="modal fade" id="CustomSelectModal" tabindex="-1" aria-labelledby="CustomSelectModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Select Modules:</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- make checkboxes -->
+                    <div>
+                        Characters:
+                            character creator
+
+                        Setting:
+                            historical events and folklore
+                            Maps
+                            Locations
+                            Hierarchy System
+                            Factions and Aliances
+                            Laws
+                            Cultures
+                            Technological advancements
+                            Languages
+                            Currency System
+
+                        Gameplay:
+                            Gameplay Mechanics
+                            Magic System
+                            Player Interactions and Quests
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 {% endblock content %}
 

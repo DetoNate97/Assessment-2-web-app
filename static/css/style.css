@@ -1,3 +1,10 @@
+/* testing class */
+.test {
+  color: red;
+  background-color: blue;
+  background: green;
+}
+
 body {
   background: #292929;
   color: #ffffff;
@@ -33,6 +40,15 @@ h1, h2, h3, h4, h5, h6 {
   border: 6px solid transparent;
 }
 
+.modal-content {
+  color: #ffffff;
+  background-color: #292929;
+}
+
+.btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
 .form-floating label {
   color: #ffffff;
 }
@@ -49,6 +65,24 @@ h1, h2, h3, h4, h5, h6 {
 
 .button-padding {
   padding-block: 7px
+}
+
+.card {
+  color: #ffffff;
+  background-color: #393939;
+  border-width: 2px;
+  border-color: #494949;
+  width: 100px;
+  height: 100px;
+  text-align: center;
+
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+}
+
+.card-text {
+  text-align: center;
 }
 
 .link {
