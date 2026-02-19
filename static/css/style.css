@@ -88,6 +88,20 @@ h1, h2, h3, h4, h5, h6 {
   text-align: center;
 }
 
+.card-button-back {
+  color: #ffffff;
+  width: 100px;
+  height: 100px; 
+  padding: 0;
+  background-color: #39393900;
+  border-width: 2px;
+  appearance: none;
+  border-style: none;
+  display: flex;
+  justify-content: center;
+  
+}
+
 .checkbox {
   background-color: #292929;
 }
@@ -148,8 +162,6 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 10px;
   color: #58151c;
   background: #f8d7da;
-  margin-right: -1.5em;
-  margin-left: 0;
 }
 
 .close-btn-danger:hover {

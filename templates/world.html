@@ -1,0 +1,30 @@
+{% extends "index.html" %}
+
+{% block content %}
+
+    <div class="ms-5">
+        <p class="centred welcomeprompt">custom world page</p>
+        world: {{world_name}}
+        <p>
+        </p>
+        current modules: 
+        {% for module in modules %}
+            {{module}},
+        {% endfor %}
+    </div>
+
+{% endblock content %}
+
+{% block navbar_right %}
+
+    <div class="red">
+        <a href="{{url_for('login')}}" class="me-2 link">log in</a>
+        or
+        <a href="{{url_for('register')}}" class="ms-2">
+            <div class="register-btn btn containerborder">
+                Register
+            </div>
+        </a>
+    </div>
+
+{% endblock navbar_right %}

@@ -4,17 +4,20 @@
 
     <h1>Welcome {{user}}!</h1>
     <h2 class="mt-4">Create New:</h2>
-
-    <div class="row align-items-start">
+    <!-- use cursor: pointer; to change the cursor texture when hover -->
+    <div class="row align-items-start ms-1">
         <button class="card m-1" data-bs-toggle="modal" data-bs-target="#CustomSelectModal">Custom</button>
-        <button class="card m-1">Book</button>
-        <button class="card m-1">Movie</button>
-        <button class="card m-1">Game</button>
+        <form action="/run_function_book" method="POST" class="card-button-back m-1"><button class="card" type="submit">Book</button></form>
+        <form action="/run_function_movie" method="POST" class="card-button-back m-1"><button class="card" type="submit">Movie</button></form>
+        <form action="/run_function_game" method="POST" class="card-button-back m-1"><button class="card" type="submit">Game</button></form>
     </div>
 
     <h2>Your Creations:</h2>
-    <!-- Button trigger modal -->
-
+    <div class="row align-items-start ms-1">
+        {% for world in data %}
+            <form action="/run_function" method="POST" class="card-button-back m-1"><button class="card" type="submit">{{world["name"]}}</button></form>
+        {% endfor %}
+    </div>
     <!-- Modal -->
     <div class="modal fade" id="CustomSelectModal" tabindex="-1" aria-labelledby="CustomSelectModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -37,7 +40,7 @@
                             {% endfor %}
                             
                             <h5>Setting:</h5>
-                            {% for field in SettingFields %}
+                            {% for field in SettFields %}
                                 <div class="ms-3">
                                         {{form[field](class="form-check-input checkbox ms-3")}}
                                         <label for="{{field}}">{{form[field].label}}</label>

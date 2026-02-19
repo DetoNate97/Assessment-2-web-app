@@ -18,6 +18,7 @@ class LoginForm(FlaskForm):
     fields = ("FloatingUsername", "FloatingPassword")
 
 class CustomSelectForm(FlaskForm):
+    # add a name field.
     # characters:
     CharCreator = BooleanField('Character Creator', default="checked")
     # setting

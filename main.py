@@ -1,23 +1,29 @@
-from flask import Flask, render_template, url_for, redirect, flash
+from flask import Flask, render_template, url_for, redirect, flash, session
 from forms import RegisterForm, LoginForm, CustomSelectForm
-import os, sqlite3, secrets
+import os, sqlite3, secrets, json
 from cryptography.fernet import Fernet
-# alternate encryption modules:
-# import hashlib, zlib
+from werkzeug.security import generate_password_hash, check_password_hash
+# alternate security modules: import hashlib, zlib
 # print(hashlib.algorithms_available)
-# password = input("Enter a password: ")
-# hashed_password = hashlib.sha256(password.encode()).hexdigest()
-# print("Hashed password:", hashed_password)
+# output = hashlib.sha256(input.encode()).hexdigest()
+
+# switched from hashlib to werkzeug because generate_password_hash does exactly the same thing but i dont have to code it.
+# also encryption doesnt work when the key changes so the key needs to be stored as well to even read or compare the password for logins.
+# but that is basically storing the key and lock in the same place so defeats the purpose of encrypting it in the first place.
+# reminder to switch to just hashing it so i dont need to store the key...
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_hex(16)
-current_user = ""
-key = Fernet.generate_key()
+key = Fernet.generate_key() # i should prob make this a const...
 cipher = Fernet(key)
 key = key.decode()
-# print(key)
-# key = b'-SB8UllACGvAHyRGhJGxgiwl5-UuxUfNAcY3BRvZMSI='
-# cipher = Fernet(key)
+salt = os.urandom(16)
+
+def hash_password(password):
+    '''
+    currently unused function. hashes the input and returns it.
+    '''
+    return generate_password_hash(password)
 
 def encrypt_message(msg):
     '''
@@ -44,22 +50,23 @@ def decrypt_message(msg, key):
     cipher = Fernet(key.encode())
     return (cipher.decrypt(msg.encode())).decode()
 
-# database file path
+# database file path:
 db_path = os.path.join("database", "database.db")
-'''change path to fit venv location'''
+# change path to fit venv location
 
-# connect to the database. 
+# connect to the database:
 try:
-    db = sqlite3.connect(db_path, check_same_thread=False) # "check_same_thread=False" fix used from assessment 1.
+    DB = sqlite3.connect(db_path, check_same_thread=False) # "check_same_thread=False" fix used from assessment 1.
     print(f"Connected")
 except sqlite3.OperationalError as error:
     print(f"Error: {error}")
 
+# website routes:
 @app.route('/')
 def welcome():
     '''
     Handles rendering of the landing page of the website. its the page the viewer first sees.
-    Returns a rendered html.
+    Returns a rendered html. no methods :)
     '''
     return render_template('welcome.html')
 
@@ -76,21 +83,27 @@ def login():
                 if the password matches: logs in the user
                 if the password doesnt match: flash an error message
     '''
-    global current_user, db
-    page, form = "Log In", LoginForm()
+    form = LoginForm()
     fields = form.fields
+    page = "Log In"
+
     if form.validate_on_submit():
-        log_user, log_pass = str(form.FloatingUsername.data), str(form.FloatingPassword.data)
-        db_data = db.execute("SELECT password,key FROM Users WHERE username = ?", [log_user]).fetchall() # db_data is in the format [("password", "key")]. why, sql, why.
-        if not db_data:
+        # get submitted data:
+        log_user, log_pass = str(form.FloatingUsername.data), str(form.FloatingPassword.data) 
+        # get stored password:
+        db_data = DB.execute("SELECT password,key FROM Users WHERE username = ?", [log_user]).fetchall() # db_data is in the format [("password", "key")]. why, sql, why.
+        # check if there is a stored password:
+        if not db_data: 
             flash(f'Failed to log in, user {log_user} does not exist', 'danger')
         else: 
-            db_password = db_data[0][0]
+            db_password = db_data[0][0] # gets the data out of the stupid double tuple trouble.
             db_key = db_data[0][1]
             db_password = decrypt_message(db_password, db_key)  
+            # compare input and stored passwords:
             if db_password == log_pass:
-                flash(f'Successfully logged in user {log_user}!', 'success')
-                current_user = log_user
+                flash(f'Successfully logged in user {log_user}!', 'success')    
+                session['current_user'] = log_user
+                session['user_worlds'] = os.path.join("database", f"{log_user}_worlds.ndjson")
                 return redirect(url_for('home'))
             else:
                 flash(f'failed to log in, check username and password.', 'danger')
@@ -107,17 +120,24 @@ def register():
           if the username isnt taken: saves the user to the database, logs in the user, and redirects to the home page.
           if the username is taken: flash an error message.
     '''
-    global current_user, db, key
-    page, form = "Register", RegisterForm()
+    global key
+    page = "Register"
+    form = RegisterForm()
     fields = form.fields
+
     if form.validate_on_submit():
+        # get submitted data:
         reg_user, reg_email, reg_pass = str(form.FloatingUsername.data), str(form.FloatingEmail.data), str(form.Password.data)
-        if not db.execute( f"SELECT password FROM Users WHERE username = ?", [reg_user] ).fetchall():
-            cursor = db.cursor()
-            cursor.execute("INSERT INTO Users (username, email, password, key) VALUES (?, ?, ?, ?)", (reg_user, reg_email, f"{encrypt_message(reg_pass)}", key)) # save new user to db
-            # create user's worlds db: cursor.execute(f"CREATE TABLE User_{reg_user}_Worlds (id INTEGER PRIMARY KEY AUTOINCREMENT, account_holder TEXT NOT NULL, account_name TEXT NOT NULL, balance INTEGER)")
-            db.commit()
-            current_user = reg_user
+        # check if the username is already taken:
+        if not DB.execute( f"SELECT password FROM Users WHERE username = ?", [reg_user] ).fetchall():
+            # save new user to the database:
+            cursor = DB.cursor()
+            cursor.execute("INSERT INTO Users (username, email, password, key) VALUES (?, ?, ?, ?)", (reg_user, reg_email, f"{encrypt_message(reg_pass)}", key))
+            cursor.execute(f"CREATE TABLE User_{reg_user}_Worlds (id INTEGER PRIMARY KEY AUTOINCREMENT, WorldName TEXT NOT NULL)") # delete
+            DB.commit()
+            session['current_user'] = reg_user
+            # set the path for the user's stored worlds:
+            session['user_worlds'] = os.path.join("database", f"{reg_user}_worlds.ndjson")
             flash(f'Account created for {form.FloatingUsername.data}!', 'success')
             return redirect(url_for('home'))
         else:
@@ -127,66 +147,142 @@ def register():
 @app.route('/home', methods=['GET', 'POST'])
 def home():
     '''
-    Handles rendering of the home page. this is where all the cards for the user's worlds are displayed. slightly inspired by google docs. 
-    renders the home.html, checks if current_user doesnt exist and redirects to login
+    Handles the home page. this is where all the cards for the user's worlds are displayed. slightly inspired by google docs/canvas.
 
-    Returns:
-        A rendered html
-        or
-        A redirect to login if there is no current_user
+    Methods: 
+    GET: render the home.html with the form in the modal.
+    POST: validate the submitted data, create a new world with the selected modules.
     '''
     form = CustomSelectForm()
-    CharFields = form.CharacterFields
-    SettingFields = form.SettingFields
-    GameFields = form.GameplayFields
-    fields=form.fields
-
-    global current_user
+    CharFields, SettFields, GameFields = form.CharacterFields, form.SettingFields, form.GameplayFields # split bc there are subheadings
+    fields=form.fields # why is this here
+    current_user = session.get('current_user')
+    user_worlds = session.get('user_worlds')
     page = "home"
+    data = []
+
+    # attempt to open the stored worlds. if there is no file it means there are no stored worlds.
+    try:
+        with open(user_worlds, "r") as file:
+            for line in file:
+                data.append(json.loads(line))
+    except:
+        pass
+
+    # redirect to login if there is no user logged in: (this prevents a crash when saving the py files)
     if not current_user:
         return redirect(url_for("login"))
     else:
         if form.validate_on_submit():
-            pass
-        return render_template('home.html', page=page, user=current_user, form=form, fields=fields, CharFields=CharFields, SettingFields=SettingFields, GameFields=GameFields)    
+            # delete:
+            cursor = DB.cursor()
+            cursor.execute(f"INSERT INTO User_{current_user}_Worlds (WorldName) VALUES (?)", ("test",))
+            DB.commit()
+            # record the selected modules:
+            modules = []
+            for i in form.CharacterFields:
+                if form[i].data:
+                    modules.append(i)
+            for i in form.SettingFields:
+                if form[i].data:
+                    modules.append(i)
+            for i in form.GameplayFields:
+                if form[i].data:
+                    modules.append(i)
+            # (temp):
+            print("saved modules: ", modules)
+            session['world_modules'] = modules
+            # create the world in the json file:
+            data = {
+                "name": "custom", 
+                "modules": modules
+                }
+            with open(user_worlds, "a") as file:
+                file.write(json.dumps(data) + "\n")
+            return redirect(url_for('world', world_name="custom"))
+        return render_template('home.html', page=page, user=current_user, form=form, fields=fields, CharFields=CharFields, SettingFields=SettFields, GameFields=GameFields, data=data)    
 
 @app.route('/settings')
 def settings():
     '''
-    Handles rendering of the settings page.
-    (slightly inspired by microsoft edge settings)
+    Handles rendering of the settings page. slightly inspired by microsoft edge settings
 
-    This route (edits x setting, etc)<-later
-    renders the settings.html and then returns it to be viewed.
-
-    Parameters:
-        none
-
-    Returns:
-        A rendered html
+    methods
     '''
     page = "settings"
     return render_template('settings.html', page=page)
 
-world_name = "example_name"
-@app.route(f'/{world_name}')
-def world_1(): # figure out how to make procedural
+@app.route('/run_function', methods=['POST'])
+def run_function():
     '''
-    Handles rendering of the home page of a user's custom world.
-
-    This route (edits x features of the world, etc)<-later
-    renders the world's .html and then returns it to be viewed.
-
-    Parameters:
-        none
-
-    Globals:
-        world_name : the name of the world to be rendered (temporary)
-        
-    Returns:
-        A rendered html
+    test function
     '''
-    return render_template(f'{world_name}.html')
+    print("Button was clicked!")
+    return redirect(url_for('home'))
+
+@app.route('/run_function_book', methods=['POST'])
+def run_function_book():
+    '''
+    enters "book" into the db for the user's worlds and redirects to the world page.
+    '''
+    modules = ['CharCreator', 'Historical', 'Maps', 'Locations', 'Hierarchy', 'Factions', 'Laws', 'Cultures', 'Technology', 'Languages', 'Currency'] # set the preset modules
+    # create the new world in the json file:
+    user_worlds = session.get('user_worlds')
+    data = {
+        "name": "book", 
+        "modules": modules
+        }
+    with open(user_worlds, "a") as file:
+        file.write(json.dumps(data) + "\n")
+    # delete:
+    current_user = session.get('current_user')
+    cursor = DB.cursor()
+    cursor.execute(f"INSERT INTO User_{current_user}_Worlds (WorldName) VALUES (?)", ("book",))
+    DB.commit()
+    # store the selected modules (temp):
+    session['world_modules'] = modules
+
+    return redirect(url_for('world', world_name="book"))
+
+@app.route('/run_function_movie', methods=['POST'])
+def run_function_movie():
+    '''
+    enters "movie" into the db for the user's worlds
+    '''
+    current_user = session.get('current_user')
+    cursor = DB.cursor()
+    cursor.execute(f"INSERT INTO User_{current_user}_Worlds (WorldName) VALUES (?)", ("movie",))
+    DB.commit()
+    return redirect(url_for('home', world_name=""))
+
+@app.route('/run_function_game', methods=['POST'])
+def run_function_game():
+    '''
+    enters "game" into the db for the user's worlds
+    '''
+    current_user = session.get('current_user')
+    cursor = DB.cursor()
+    cursor.execute(f"INSERT INTO User_{current_user}_Worlds (WorldName) VALUES (?)", ("game",))
+    DB.commit()
+    return redirect(url_for('home'))
+
+world_name = "example_world"
+@app.route(f'/world/<world_name>')
+def world(world_name):
+    '''
+    Handles the custom worlds.
+    instead of somehow creating an individual html file for each world, this instead is a single file that gets all the data for the world and displays it.
+
+    param:
+    world name: ............................ activate dem neurons
+    '''
+    modules = session.get('world_modules')
+    current_user = session.get('current_user')
+    if not current_user:
+        return redirect(url_for("login"))
+
+    return render_template(f'world.html', world_name=world_name, modules=modules)
 
 if __name__ == '__main__': # runs if file is run as script, but not if its imported
     app.run(debug=True, port=5000, host="0.0.0.0")
+    # make a start.bat file
