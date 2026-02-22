@@ -15,7 +15,7 @@
     <h2>Your Creations:</h2>
     <div class="row align-items-start ms-1">
         {% for world in data %}
-            <form action="/run_function" method="POST" class="card-button-back m-1"><button class="card" type="submit">{{world["name"]}}</button></form>
+            <form action="/open_world/{{world['name']}}" method="POST" class="card-button-back m-1"><button class="card" type="submit">{{world["name"]}}</button></form>
         {% endfor %}
     </div>
     <!-- Modal -->
@@ -30,7 +30,21 @@
                     {{form.hidden_tag()}}
                     <div class="modal-body">
                         <fieldset class="">
-                            
+
+                            <h5>World name:</h5>
+                            <div class="form form-worldname ms-3">
+                                {% if form.worldnamefield.errors %}
+                                    {{form.worldnamefield(class="form-control form-control-lg is-invalid")}}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.worldnamefield.errors %}
+                                            <span>{{error}}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{form.worldnamefield(class="form-control form-control-lg")}}
+                                {% endif %}
+                            </div>
+
                             <h5>Character:</h5>
                             {% for field in CharFields %}
                                 <div class="ms-3">
@@ -67,6 +81,14 @@
     </div>
 
 {% endblock content %}
+
+{% block navbar_centre %}
+
+<div class="mr-auto page">
+    {{page}}
+</div>
+
+{% endblock navbar_centre %}
 
 {% block navbar_right %}
 

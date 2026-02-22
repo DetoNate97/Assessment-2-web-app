@@ -66,6 +66,51 @@ h1, h2, h3, h4, h5, h6 {
   color: #ffffff
 }
 
+.form label {
+  color: #ffffff;
+}
+
+.form input {
+  background-color: #292929;
+  color: #ffffff
+}
+
+.form ::placeholder {
+  color: #aaaaaa
+}
+
+.form input:focus {
+  background-color: #292929;
+  color: #ffffff
+}
+
+.form-worldname {
+  width: 300px;
+}
+
+.form-worldnamechange{
+  width: 150px;
+  border-color: #292929
+}
+
+.form-worldnamechange:hover {
+  border-color: #aaaaaa
+}
+
+.form-namechange-padding {
+  padding-inline: 3px
+}
+
+.btn-worldnamechange {
+  border-color: #292929;
+  color: #aaaaaa;
+}
+
+.btn-worldnamechange:hover {
+  border-color: #595959;
+  color: #ffffff;
+}
+
 .button-padding {
   padding-block: 7px
 }
@@ -104,6 +149,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .checkbox {
   background-color: #292929;
+  transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out
 }
 
 .checkbox:checked {
@@ -146,7 +192,7 @@ h1, h2, h3, h4, h5, h6 {
   color: #ffffff;
 }
 
-/* not sure why this needs to be :first-child:active instead of just :active but it works now ¯\_(ツ)_/¯ */
+/* not sure why this needs to be :first-child:active instead of just :active but it works now ¯\_(ツ)_/¯*/
 .register-btn:first-child:active { 
   padding: 8px;
   border: 4px solid transparent;

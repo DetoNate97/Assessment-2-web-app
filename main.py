@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, flash, session
-from forms import RegisterForm, LoginForm, CustomSelectForm
-import os, sqlite3, secrets, json
+from forms import RegisterForm, LoginForm, CustomSelectForm, ChangeWorldNameForm
+import os, sqlite3, secrets, json, time
 from cryptography.fernet import Fernet
 from werkzeug.security import generate_password_hash, check_password_hash
 # alternate security modules: import hashlib, zlib
@@ -14,10 +14,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_hex(16)
-key = Fernet.generate_key() # i should prob make this a const...
+key = Fernet.generate_key()
 cipher = Fernet(key)
-key = key.decode()
-salt = os.urandom(16)
+KEY = key.decode()
+salt = os.urandom(16) # is this even used for anything? no, me, it isnt.
 
 def hash_password(password):
     '''
@@ -120,7 +120,6 @@ def register():
           if the username isnt taken: saves the user to the database, logs in the user, and redirects to the home page.
           if the username is taken: flash an error message.
     '''
-    global key
     page = "Register"
     form = RegisterForm()
     fields = form.fields
@@ -132,8 +131,7 @@ def register():
         if not DB.execute( f"SELECT password FROM Users WHERE username = ?", [reg_user] ).fetchall():
             # save new user to the database:
             cursor = DB.cursor()
-            cursor.execute("INSERT INTO Users (username, email, password, key) VALUES (?, ?, ?, ?)", (reg_user, reg_email, f"{encrypt_message(reg_pass)}", key))
-            cursor.execute(f"CREATE TABLE User_{reg_user}_Worlds (id INTEGER PRIMARY KEY AUTOINCREMENT, WorldName TEXT NOT NULL)") # delete
+            cursor.execute("INSERT INTO Users (username, email, password, key) VALUES (?, ?, ?, ?)", (reg_user, reg_email, f"{encrypt_message(reg_pass)}", KEY))
             DB.commit()
             session['current_user'] = reg_user
             # set the path for the user's stored worlds:
@@ -154,8 +152,11 @@ def home():
     POST: validate the submitted data, create a new world with the selected modules.
     '''
     form = CustomSelectForm()
-    CharFields, SettFields, GameFields = form.CharacterFields, form.SettingFields, form.GameplayFields # split bc there are subheadings
-    fields=form.fields # why is this here
+    worldnamefield = form.worldnamefield
+    CharFields = form.CharacterFields
+    SettFields = form.SettFields
+    GameFields = form.GameplayFields # fields are split bc there are subheadings
+    fields = form.fields
     current_user = session.get('current_user')
     user_worlds = session.get('user_worlds')
     page = "home"
@@ -172,35 +173,27 @@ def home():
     # redirect to login if there is no user logged in: (this prevents a crash when saving the py files)
     if not current_user:
         return redirect(url_for("login"))
-    else:
-        if form.validate_on_submit():
-            # delete:
-            cursor = DB.cursor()
-            cursor.execute(f"INSERT INTO User_{current_user}_Worlds (WorldName) VALUES (?)", ("test",))
-            DB.commit()
-            # record the selected modules:
-            modules = []
-            for i in form.CharacterFields:
-                if form[i].data:
-                    modules.append(i)
-            for i in form.SettingFields:
-                if form[i].data:
-                    modules.append(i)
-            for i in form.GameplayFields:
-                if form[i].data:
-                    modules.append(i)
-            # (temp):
-            print("saved modules: ", modules)
-            session['world_modules'] = modules
-            # create the world in the json file:
-            data = {
-                "name": "custom", 
-                "modules": modules
-                }
-            with open(user_worlds, "a") as file:
-                file.write(json.dumps(data) + "\n")
-            return redirect(url_for('world', world_name="custom"))
-        return render_template('home.html', page=page, user=current_user, form=form, fields=fields, CharFields=CharFields, SettingFields=SettFields, GameFields=GameFields, data=data)    
+    if form.validate_on_submit():
+        print(form.worldnamefield.data)
+        if not form.worldnamefield.data:
+            world_name = "New_World"
+        else:
+            world_name = form.worldnamefield.data
+        # record the selected modules:
+        modules = []
+        for i in form.fields:
+            if form[i].data:
+                modules.append(i)
+        session['world_modules'] = modules
+        # create the world in the json file:
+        data = {
+            "name": world_name, 
+            "modules": modules
+            }
+        with open(user_worlds, "a") as file:
+            file.write(json.dumps(data) + "\n")
+        return redirect(url_for('world', world_name=world_name))
+    return render_template('home.html', page=page, user=current_user, form=form, fields=fields, worldnamefield=worldnamefield, CharFields=CharFields, SettFields=SettFields, GameFields=GameFields, data=data)    
 
 @app.route('/settings')
 def settings():
@@ -212,77 +205,155 @@ def settings():
     page = "settings"
     return render_template('settings.html', page=page)
 
-@app.route('/run_function', methods=['POST'])
-def run_function():
+@app.route('/open_world/<world_name>', methods=['POST'])
+def open_world(world_name):
     '''
-    test function
+    redirects to the world. 
+    gets the world name, finds the world in the json, records the modules, redirects to the world
+
+    parameters:
+    world_name: the name of the world... can it get any more obvious?
+
+    returns:
+    a redirect to the world
     '''
-    print("Button was clicked!")
-    return redirect(url_for('home'))
+    world_name = world_name
+    data = []
+    user_worlds = session.get('user_worlds')
+    try:
+        with open(user_worlds, "r") as file:
+            for line in file:
+                data.append(json.loads(line))
+    except:
+        print("no db? :megamind:")
+    for i in data:
+        if i["name"] == world_name:
+            modules = i["modules"]
+            pass # for some reason pass works here but the one to change name needs break
+    session['world_modules'] = modules
+    return redirect(url_for('world', world_name=world_name))
 
 @app.route('/run_function_book', methods=['POST'])
 def run_function_book():
     '''
-    enters "book" into the db for the user's worlds and redirects to the world page.
+    
     '''
     modules = ['CharCreator', 'Historical', 'Maps', 'Locations', 'Hierarchy', 'Factions', 'Laws', 'Cultures', 'Technology', 'Languages', 'Currency'] # set the preset modules
     # create the new world in the json file:
     user_worlds = session.get('user_worlds')
     data = {
-        "name": "book", 
+        "name": "New_Book", 
         "modules": modules
         }
     with open(user_worlds, "a") as file:
         file.write(json.dumps(data) + "\n")
-    # delete:
-    current_user = session.get('current_user')
-    cursor = DB.cursor()
-    cursor.execute(f"INSERT INTO User_{current_user}_Worlds (WorldName) VALUES (?)", ("book",))
-    DB.commit()
-    # store the selected modules (temp):
+    # store the selected modules:
     session['world_modules'] = modules
+    return redirect(url_for('world', world_name="New_Book"))
 
-    return redirect(url_for('world', world_name="book"))
-
+# broken:
 @app.route('/run_function_movie', methods=['POST'])
 def run_function_movie():
     '''
-    enters "movie" into the db for the user's worlds
+    
     '''
-    current_user = session.get('current_user')
-    cursor = DB.cursor()
-    cursor.execute(f"INSERT INTO User_{current_user}_Worlds (WorldName) VALUES (?)", ("movie",))
-    DB.commit()
-    return redirect(url_for('home', world_name=""))
+    modules = ['CharCreator', 'Historical', 'Maps', 'Locations', 'Hierarchy', 'Factions', 'Laws', 'Cultures', 'Technology', 'Languages', 'Currency'] # set the preset modules
+    # create the new world in the json file:
+    user_worlds = session.get('user_worlds')
+    data = {
+        "name": "New_Movie", 
+        "modules": modules
+        }
+    with open(user_worlds, "a") as file:
+        file.write(json.dumps(data) + "\n")
+    # store the selected modules:
+    session['world_modules'] = modules
+    return redirect(url_for('world', world_name="New_Movie"))
 
+# broken:
 @app.route('/run_function_game', methods=['POST'])
 def run_function_game():
     '''
-    enters "game" into the db for the user's worlds
+    
     '''
-    current_user = session.get('current_user')
-    cursor = DB.cursor()
-    cursor.execute(f"INSERT INTO User_{current_user}_Worlds (WorldName) VALUES (?)", ("game",))
-    DB.commit()
-    return redirect(url_for('home'))
+    modules = ["CharCreator", "Historical", "Maps", "Locations", "Hierarchy", "Factions", "Laws", "Cultures", "Technology", "Languages", "Currency", "Gameplay", "Magic", "Quests"] # set the preset modules
+    # create the new world in the json file:
+    user_worlds = session.get('user_worlds')
+    data = {
+        "name": "New_Game", 
+        "modules": modules
+        }
+    with open(user_worlds, "a") as file:
+        file.write(json.dumps(data) + "\n")
+    # store the selected modules:
+    session['world_modules'] = modules
+    return redirect(url_for('world', world_name="New_Game"))
 
 world_name = "example_world"
-@app.route(f'/world/<world_name>')
+@app.route(f'/world/<world_name>', methods=['GET', 'POST'])
 def world(world_name):
     '''
     Handles the custom worlds.
     instead of somehow creating an individual html file for each world, this instead is a single file that gets all the data for the world and displays it.
 
-    param:
+    parameters:
     world name: ............................ activate dem neurons
+
+    returns:
+    a rendered html
     '''
     modules = session.get('world_modules')
     current_user = session.get('current_user')
+    user_worlds = session.get('user_worlds')
+    data = []
+    form = ChangeWorldNameForm()
+    # redirect to login if there is no user logged in: (this prevents a crash when saving the py files)
     if not current_user:
         return redirect(url_for("login"))
+    
+    if form.validate_on_submit():
+        # renaming world:
+        # save current data
+        with open(user_worlds, "r") as file:
+            for line in file:
+                world = json.loads(line)
+                data.append(world)
+        # change the name of the world that matches the current world to the new name
+        for i in data:
+            if i["name"] == world_name:
+                i["name"] = form.worldnamefield.data
+                break
+        # write the edited version back into json
+        with open(user_worlds, 'w') as file:
+            # write all the saved lines back:
+            for obj in data:
+                file.write(json.dumps(obj) + "\n")
+        # add check so that 2 worlds cant be named the same
+    return render_template(f'world.html', world_name=world_name, modules=modules, form=form)
 
-    return render_template(f'world.html', world_name=world_name, modules=modules)
+@app.route('/delete_world/<world_name>', methods=['POST'])
+def delete_world(world_name):
+    '''
+    copilot helped
+    how to delete a dictionary from ndjson
+    '''
+    world_name = world_name
+    data = []
+    user_worlds = session.get('user_worlds')
+    # set the condition for deleting a world:
+    condition = lambda obj: obj["name"] == world_name
+    with open(user_worlds, "r") as file:
+        # save all the lines that dont meet the condition:
+        for line in file:
+            obj = json.loads(line)
+            if not condition(obj):
+                data.append(obj)
+    with open(user_worlds, 'w') as file:
+        # write all the saved lines back:
+        for obj in data:
+            file.write(json.dumps(obj) + "\n")
+    # thus all the lines that meet the condition are not written back into the json, and are deleted.
+    return redirect(url_for('home'))
 
 if __name__ == '__main__': # runs if file is run as script, but not if its imported
     app.run(debug=True, port=5000, host="0.0.0.0")
-    # make a start.bat file

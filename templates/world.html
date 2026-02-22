@@ -13,18 +13,42 @@
         {% endfor %}
     </div>
 
+    <h5>World name:</h5>
+    
+    <form action="/delete_world/{{world_name}}" method="POST" class="card-button-back m-1"><button class="card" type="submit">delete world</button></form>
+
 {% endblock content %}
+
+{% block navbar_centre %}
+
+<form method="POST" action="" novalidate class="row">
+    {{form.hidden_tag()}}
+    <fieldset class="col-auto form-namechange-padding">
+        <div class="form">
+            {% if form.worldnamefield.errors %}
+                {{form.worldnamefield(class="form-control form-control-lg is-invalid")}}
+                <div class="invalid-feedback">
+                    {% for error in form.worldnamefield.errors %}
+                        <span>{{error}}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <input class="form-worldnamechange form-control form-control-lg" id="worldnamefield" name="worldnamefield" placeholder="{{world_name}}" type="text" value="" onkeydown="if(event.key === 'Enter')">
+                <!-- {{form.worldnamefield(class="form-control form-control-lg")}} --> <!-- this line doesnt work despite being identical to above -->
+            {% endif %}
+        </div>
+    </fieldset>
+    <div class="col-auto align-self-center form-namechange-padding">
+        {{form.submit(style="display:none;")}}
+    </div>
+</form>
+
+{% endblock navbar_centre %}
 
 {% block navbar_right %}
 
     <div class="red">
-        <a href="{{url_for('login')}}" class="me-2 link">log in</a>
-        or
-        <a href="{{url_for('register')}}" class="ms-2">
-            <div class="register-btn btn containerborder">
-                Register
-            </div>
-        </a>
+        <a href="{{url_for('home')}}" class="me-2 link">home</a>
     </div>
 
 {% endblock navbar_right %}
