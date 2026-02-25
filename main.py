@@ -1,8 +1,10 @@
 from flask import Flask, render_template, url_for, redirect, flash, session
+from flask_login import login_user, logout_user # not used, but use next time i need to make a login
 from forms import RegisterForm, LoginForm, CustomSelectForm, ChangeWorldNameForm
 import os, sqlite3, secrets, json, time
 from cryptography.fernet import Fernet
 from werkzeug.security import generate_password_hash, check_password_hash
+
 # alternate security modules: import hashlib, zlib
 # print(hashlib.algorithms_available)
 # output = hashlib.sha256(input.encode()).hexdigest()
@@ -21,7 +23,8 @@ salt = os.urandom(16) # is this even used for anything? no, me, it isnt.
 
 def hash_password(password):
     '''
-    currently unused function. hashes the input and returns it.
+    currently unused function. hashes the input using werkzeug and returns it.
+    here as a reminder to use this method of hashing instead of the current method of encrypting.
     '''
     return generate_password_hash(password)
 
@@ -174,7 +177,6 @@ def home():
     if not current_user:
         return redirect(url_for("login"))
     if form.validate_on_submit():
-        print(form.worldnamefield.data)
         if not form.worldnamefield.data:
             world_name = "New_World"
         else:
@@ -236,7 +238,11 @@ def open_world(world_name):
 @app.route('/run_function_book', methods=['POST'])
 def run_function_book():
     '''
-    
+    redirects to the world. similar to the open_world function, but instead of opening the modal to select modules, they are preselected.
+    creates the world in the json with pre-set modules and redirects to it.
+
+    returns:
+    a redirect to the world
     '''
     modules = ['CharCreator', 'Historical', 'Maps', 'Locations', 'Hierarchy', 'Factions', 'Laws', 'Cultures', 'Technology', 'Languages', 'Currency'] # set the preset modules
     # create the new world in the json file:
@@ -251,11 +257,14 @@ def run_function_book():
     session['world_modules'] = modules
     return redirect(url_for('world', world_name="New_Book"))
 
-# broken:
 @app.route('/run_function_movie', methods=['POST'])
 def run_function_movie():
     '''
-    
+    redirects to the world. the movie preset alternative to run_function_book.
+    creates the world in the json with pre-set modules and redirects to it.
+
+    returns:
+    a redirect to the world
     '''
     modules = ['CharCreator', 'Historical', 'Maps', 'Locations', 'Hierarchy', 'Factions', 'Laws', 'Cultures', 'Technology', 'Languages', 'Currency'] # set the preset modules
     # create the new world in the json file:
@@ -270,11 +279,14 @@ def run_function_movie():
     session['world_modules'] = modules
     return redirect(url_for('world', world_name="New_Movie"))
 
-# broken:
 @app.route('/run_function_game', methods=['POST'])
 def run_function_game():
     '''
-    
+    redirects to the world. the videogame preset alternative to run_function_book.
+    creates the world in the json with pre-set modules and redirects to it.
+
+    returns:
+    a redirect to the world
     '''
     modules = ["CharCreator", "Historical", "Maps", "Locations", "Hierarchy", "Factions", "Laws", "Cultures", "Technology", "Languages", "Currency", "Gameplay", "Magic", "Quests"] # set the preset modules
     # create the new world in the json file:
@@ -289,7 +301,6 @@ def run_function_game():
     session['world_modules'] = modules
     return redirect(url_for('world', world_name="New_Game"))
 
-world_name = "example_world"
 @app.route(f'/world/<world_name>', methods=['GET', 'POST'])
 def world(world_name):
     '''
@@ -314,21 +325,24 @@ def world(world_name):
     if form.validate_on_submit():
         # renaming world:
         # save current data
-        with open(user_worlds, "r") as file:
-            for line in file:
-                world = json.loads(line)
-                data.append(world)
-        # change the name of the world that matches the current world to the new name
-        for i in data:
-            if i["name"] == world_name:
-                i["name"] = form.worldnamefield.data
-                break
-        # write the edited version back into json
-        with open(user_worlds, 'w') as file:
-            # write all the saved lines back:
-            for obj in data:
-                file.write(json.dumps(obj) + "\n")
-        # add check so that 2 worlds cant be named the same
+        if form.worldnamefield.data:
+            with open(user_worlds, "r") as file:
+                for line in file:
+                    world = json.loads(line)
+                    data.append(world)
+            # change the name of the world that matches the current world to the new name
+            for i in data:
+                if i["name"] == world_name:
+                    i["name"] = form.worldnamefield.data
+                    break
+            # write the edited version back into json
+            with open(user_worlds, 'w') as file:
+                # write all the saved lines back:
+                for obj in data:
+                    file.write(json.dumps(obj) + "\n")
+            # add check so that 2 worlds cant be named the same
+        else:
+            flash("Invalid world name, please enter a name.", "danger")
     return render_template(f'world.html', world_name=world_name, modules=modules, form=form)
 
 @app.route('/delete_world/<world_name>', methods=['POST'])

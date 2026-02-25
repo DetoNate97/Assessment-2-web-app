@@ -84,21 +84,22 @@ h1, h2, h3, h4, h5, h6 {
   color: #ffffff
 }
 
-.form-worldname {
+.form-worldnameset {
   width: 300px;
 }
 
-.form-worldnamechange{
-  width: 150px;
-  border-color: #292929
+.form-worldnamechange {
+  border-color: #292929;
+  width: 200x;
+  display: inline-block;
 }
 
 .form-worldnamechange:hover {
   border-color: #aaaaaa
 }
 
-.form-namechange-padding {
-  padding-inline: 3px
+.fit-content {
+  width: fit-content;
 }
 
 .btn-worldnamechange {
@@ -123,14 +124,9 @@ h1, h2, h3, h4, h5, h6 {
   width: 100px;
   height: 100px;
   text-align: center;
-
   display: flex; 
   justify-content: center; 
   align-items: center; 
-}
-
-.card-text {
-  text-align: center;
 }
 
 .card-button-back {
@@ -144,7 +140,27 @@ h1, h2, h3, h4, h5, h6 {
   border-style: none;
   display: flex;
   justify-content: center;
-  
+}
+.card-btn {
+  color: #ffffff;
+  width: 100px;
+  height: 100px; 
+  padding: 0;
+  background-color: #39393900;
+  border-width: 2px;
+  appearance: none;
+  border-style: none;
+  display: flex;
+  justify-content: center;
+}
+
+.card-CharCreator {
+  width: 200px;
+  height: 500px;
+  text-align: start;
+  justify-content: start;
+  display:block;
+  padding: 0;
 }
 
 .checkbox {
@@ -291,4 +307,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 .mt-7 {
   margin-top: 5rem;
+}
+.mx-6 {
+  margin-inline: 4rem;
+}
+.mx-7 {
+  margin-inline: 5rem;
 }

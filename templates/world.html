@@ -2,15 +2,81 @@
 
 {% block content %}
 
-    <div class="ms-5">
-        <p class="centred welcomeprompt">custom world page</p>
-        world: {{world_name}}
-        <p>
-        </p>
-        current modules: 
-        {% for module in modules %}
-            {{module}},
-        {% endfor %}
+    <!-- for now the following section will seperately check if each module has been selected, and if it is, display the elements for the module to function. -->
+    <!-- the reason these need to be seperate is because each module has a different function, so a loop wont work, at least with my current structure. -->
+    <div class="row">
+        {% if "CharCreator" in modules %}
+            <div class="card card-CharCreator m-1 p-1">
+                <form action="/createchar" method="POST" class=""><button class="btn btn-outline-info" type="submit">add new character</button></form>
+                for char in chars
+                display char
+            </div>
+        {% endif %}
+        {% if "Historical" in modules %}
+            <div class="card m-1">
+                placeholder for Historical module
+            </div>
+        {% endif %}
+        {% if "Maps" in modules %}
+            <div class="card m-1">
+                placeholder for Maps module
+            </div>
+        {% endif %}
+        {% if "Locations" in modules %}
+            <div class="card m-1">
+                placeholder for Locations module
+            </div>
+        {% endif %}
+        {% if "Hierarchy" in modules %}
+            <div class="card m-1">
+                placeholder for Hierarchy module
+            </div>
+        {% endif %}
+        {% if "Factions" in modules %}
+            <div class="card m-1">
+                placeholder for Factions module
+            </div>
+        {% endif %}
+        {% if "Laws" in modules %}
+            <div class="card m-1">
+                placeholder for Laws module
+            </div>
+        {% endif %}
+        {% if "Cultures" in modules %}
+            <div class="card m-1">
+                placeholder for Cultures module
+            </div>
+        {% endif %}
+        {% if "Technology" in modules %}
+            <div class="card m-1">
+                placeholder for Technology module
+            </div>
+        {% endif %}
+        {% if "Languages" in modules %}
+            <div class="card m-1">
+                placeholder for Languages module
+            </div>
+        {% endif %}
+        {% if "Currency" in modules %}
+            <div class="card m-1">
+                placeholder for Currency module
+            </div>
+        {% endif %}
+        {% if "Gameplay" in modules %}
+            <div class="card m-1">
+                placeholder for Gameplay module
+            </div>
+        {% endif %}
+        {% if "Magic" in modules %}
+            <div class="card m-1">
+                placeholder for Magic module
+            </div>
+        {% endif %}
+        {% if "Quests" in modules %}
+            <div class="card m-1">
+                placeholder for Quests module
+            </div>
+        {% endif %}
     </div>
 
     <h5>World name:</h5>
@@ -20,29 +86,28 @@
 {% endblock content %}
 
 {% block navbar_centre %}
-
-<form method="POST" action="" novalidate class="row">
-    {{form.hidden_tag()}}
-    <fieldset class="col-auto form-namechange-padding">
-        <div class="form">
-            {% if form.worldnamefield.errors %}
-                {{form.worldnamefield(class="form-control form-control-lg is-invalid")}}
-                <div class="invalid-feedback">
-                    {% for error in form.worldnamefield.errors %}
-                        <span>{{error}}</span>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <input class="form-worldnamechange form-control form-control-lg" id="worldnamefield" name="worldnamefield" placeholder="{{world_name}}" type="text" value="" onkeydown="if(event.key === 'Enter')">
-                <!-- {{form.worldnamefield(class="form-control form-control-lg")}} --> <!-- this line doesnt work despite being identical to above -->
-            {% endif %}
+    <form method="POST" action="" novalidate class="row container fit-content align-items-center justify-content-center mx-7">
+        <h5 class="col m-2 fit-content p-0">World name:</h5>
+        {{form.hidden_tag()}}
+        <fieldset class="col p-0">
+            <div class="form">
+                {% if form.worldnamefield.errors %}
+                    {{form.worldnamefield(class="form-control form-control-lg is-invalid")}}
+                    <div class="invalid-feedback">
+                        {% for error in form.worldnamefield.errors %}
+                            <span>{{error}}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <input class="form-control form-control-lg form-worldnamechange" id="worldnamefield" name="worldnamefield" placeholder="{{world_name}}" type="text" value="">
+                    <!-- {{form.worldnamefield(class="form-control form-control-lg")}} this line doesnt work despite being identical to above  -->
+                {% endif %}
+            </div>
+        </fieldset>
+        <div class="">
+            {{form.submit(style="display:none;")}}
         </div>
-    </fieldset>
-    <div class="col-auto align-self-center form-namechange-padding">
-        {{form.submit(style="display:none;")}}
-    </div>
-</form>
-
+    </form>
 {% endblock navbar_centre %}
 
 {% block navbar_right %}

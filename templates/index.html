@@ -25,11 +25,11 @@
 <body>
 
     <!-- navbar -->
-    <header class="site-header">
-        <nav class="navbar container fixed-top mt-2">
+    <header class="site-header container text-center">
+        <nav class="navbar fixed-top mt-2 row align-items-center justify-content-between">
 
             <!-- brand -->
-            <div>
+            <div class="col">
                 <a class="navbar-brand mr-4" href="{{url_for('welcome')}}">
                     <!-- temporary svg from bootstrap -->
                     <svg height="32" class="" viewbox="0 0 118 94"> 
@@ -40,11 +40,14 @@
             </div>
 
             <!-- middle -->
-            {% block navbar_centre %}
-            {% endblock navbar_centre %}
+            <div class="col">
+                {% block navbar_centre %}
+                {% endblock navbar_centre %}
+            </div>
+            
 
             <!-- right -->
-            <div class="">
+            <div class="col">
                 {% block navbar_right %}
                 {% endblock navbar_right %}
             </div>
