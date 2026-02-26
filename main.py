@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, flash, session
-from flask_login import login_user, logout_user # not used, but use next time i need to make a login
-from forms import RegisterForm, LoginForm, CustomSelectForm, ChangeWorldNameForm
+from flask_login import login_user, logout_user # not used, but remember to use next time i need to make a login
+from forms import RegisterForm, LoginForm, CustomSelectForm, ChangeWorldNameForm, ModuleForms
 import os, sqlite3, secrets, json, time
 from cryptography.fernet import Fernet
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -190,7 +190,8 @@ def home():
         # create the world in the json file:
         data = {
             "name": world_name, 
-            "modules": modules
+            "modules": modules,
+            "charactes": {}
             }
         with open(user_worlds, "a") as file:
             file.write(json.dumps(data) + "\n")
@@ -235,6 +236,7 @@ def open_world(world_name):
     session['world_modules'] = modules
     return redirect(url_for('world', world_name=world_name))
 
+# rename these to create_new_(text)
 @app.route('/run_function_book', methods=['POST'])
 def run_function_book():
     '''
@@ -318,11 +320,23 @@ def world(world_name):
     user_worlds = session.get('user_worlds')
     data = []
     form = ChangeWorldNameForm()
+    moduleforms = ModuleForms()
+    CreateCharacterNameField = moduleforms.CreateCharacterNameField
+    CreateCharacterInfoField = moduleforms.CreateCharacterInfoField
+
     # redirect to login if there is no user logged in: (this prevents a crash when saving the py files)
     if not current_user:
         return redirect(url_for("login"))
-    
-    if form.validate_on_submit():
+    characters = []
+    with open(user_worlds, "r") as file:
+        for line in file:
+            world = json.loads(line)
+            data.append(world)
+    for i in data:
+        if i["name"] == world_name:
+            characters = i["characters"]
+    data = []
+    if form.validate_on_submit() and form.worldnamefield.data:
         # renaming world:
         # save current data
         if form.worldnamefield.data:
@@ -343,7 +357,26 @@ def world(world_name):
             # add check so that 2 worlds cant be named the same
         else:
             flash("Invalid world name, please enter a name.", "danger")
-    return render_template(f'world.html', world_name=world_name, modules=modules, form=form)
+    if moduleforms.validate_on_submit() and moduleforms.CreateCharacterNameField.data:
+        charname = CreateCharacterNameField.data
+        charinfo = CreateCharacterInfoField.data
+        if charname and charinfo:
+            with open(user_worlds, "r") as file:
+                for line in file:
+                    world = json.loads(line)
+                    data.append(world)
+            for i in data:
+                if i["name"] == world_name:
+                    i["characters"][charname] = [charinfo]
+            with open(user_worlds, 'w') as file:
+                for obj in data:
+                    file.write(json.dumps(obj) + "\n")
+        else:
+            flash("enter the info", "danger")
+    if form.validate_on_submit() and not moduleforms.CreateCharacterNameField.data and not form.worldnamefield.data:
+        flash("bro really trying to break this. do you want a cookie for that?", "danger")
+    # its possible to break it by entering values into all 3 and then submitting. fix it
+    return render_template(f'world.html', world_name=world_name, modules=modules, form=form, moduleforms=moduleforms, CreateCharacterNameField=CreateCharacterNameField, CreateCharacterInfoField=CreateCharacterInfoField, characters=characters)
 
 @app.route('/delete_world/<world_name>', methods=['POST'])
 def delete_world(world_name):
@@ -368,6 +401,14 @@ def delete_world(world_name):
             file.write(json.dumps(obj) + "\n")
     # thus all the lines that meet the condition are not written back into the json, and are deleted.
     return redirect(url_for('home'))
+
+def create_character():
+    # user_worlds = session.get("user_worlds")
+    # data = []
+    # with open(user_worlds, "r") as file:
+    #         for line in file:
+    #             data.append(json.loads(line))
+    pass
 
 if __name__ == '__main__': # runs if file is run as script, but not if its imported
     app.run(debug=True, port=5000, host="0.0.0.0")

@@ -7,9 +7,14 @@
     <div class="row">
         {% if "CharCreator" in modules %}
             <div class="card card-CharCreator m-1 p-1">
-                <form action="/createchar" method="POST" class=""><button class="btn btn-outline-info" type="submit">add new character</button></form>
-                for char in chars
-                display char
+                <form action="/create_character" method="POST" class=""><button class="btn btn-outline-info" type="submit">add new character</button></form>
+                <button class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#CharacterCreateModal">new char</button>
+                {% for char in characters %}
+                    {{char}}
+                    {% for i in characters[char] %}
+                        {{i}}
+                    {% endfor %}
+                {% endfor %}
             </div>
         {% endif %}
         {% if "Historical" in modules %}
@@ -78,6 +83,40 @@
             </div>
         {% endif %}
     </div>
+
+    <!-- module modals: -->
+     <!-- so many modals... -->
+    <!-- CharacterCreateModal -->
+    <div class="modal fade" id="CharacterCreateModal" tabindex="-1" aria-labelledby="CharacterCreateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="CharacterCreateModalLabel">Select Modules:</h1>
+                    <button type="button" class="modal-close-btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="" novalidate>
+                    {{form.hidden_tag()}}
+                    <div class="modal-body">
+                        <fieldset class="">
+                            <h5>Character name:</h5>
+                            <div class="form ms-3">
+                                {{moduleforms.CreateCharacterNameField(class="form-control form-control-lg")}}
+                            </div>
+                            <h5>Character info:</h5>
+                            <div class="form ms-3">
+                                {{moduleforms.CreateCharacterInfoField(class="form-control form-control-lg")}}
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div class="modal-footer mt-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        {{moduleforms.submit(class="btn btn-outline-info")}}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 
     <h5>World name:</h5>
     

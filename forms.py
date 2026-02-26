@@ -50,6 +50,11 @@ class ChangeWorldNameForm(FlaskForm):
     worldnamefield = StringField('world_name', render_kw={"placeholder": "{{world_name}}", "value": ""})
     submit = SubmitField('Change')
 
+class ModuleForms(FlaskForm):
+    CreateCharacterNameField = StringField('Character Name')
+    CreateCharacterInfoField = StringField('Character Info')
+    submit = SubmitField('create character')
+
 
 # def validate_username(self, username):
 #     if not username.data.isalnum():
