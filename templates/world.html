@@ -1,20 +1,38 @@
 {% extends "index.html" %}
 
 {% block content %}
+    <div class="offcanvas offcanvas-start hide" data-bs-scroll="true" tabindex="-1" id="offcanvas" aria-labelledby="offcanvasLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasLabel">Offcanvas</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            Content for the offcanvas goes here. You can place just about any Bootstrap component or custom elements here.
+        </div>
+    </div>
+
+    <a class="btn btn-primary" data-bs-toggle="offcanvas" href="#offcanvas" role="button" aria-controls="offcanvasExample">
+        Link with href
+    </a>
 
     <!-- for now the following section will seperately check if each module has been selected, and if it is, display the elements for the module to function. -->
     <!-- the reason these need to be seperate is because each module has a different function, so a loop wont work, at least with my current structure. -->
     <div class="row">
         {% if "CharCreator" in modules %}
             <div class="card card-CharCreator m-1 p-1">
+                <h3>Characters</h3>
                 <form action="/create_character" method="POST" class=""><button class="btn btn-outline-info" type="submit">add new character</button></form>
                 <button class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#CharacterCreateModal">new char</button>
-                {% for char in characters %}
-                    {{char}}
-                    {% for i in characters[char] %}
-                        {{i}}
+                <div class="mb-4">
+                    {% for char in characters %}
+                        <p class="mb-0 mt-3">{{char}} ------ edit</p>
+                        <span class="m-0">
+                            {% for i in characters[char] %}
+                                {{i}}
+                            {% endfor %}
+                        </p>
                     {% endfor %}
-                {% endfor %}
+                </div>
             </div>
         {% endif %}
         {% if "Historical" in modules %}
@@ -85,43 +103,50 @@
     </div>
 
     <!-- module modals: -->
-     <!-- so many modals... -->
-    <!-- CharacterCreateModal -->
-    <div class="modal fade" id="CharacterCreateModal" tabindex="-1" aria-labelledby="CharacterCreateModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="CharacterCreateModalLabel">Select Modules:</h1>
-                    <button type="button" class="modal-close-btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- so many modals... -->
+    
+    
+    {% if "CharCreator" in modules %}
+        <!-- CharacterCreateModal -->
+        <div class="modal fade" id="CharacterCreateModal" tabindex="-1" aria-labelledby="CharacterCreateModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="CharacterCreateModalLabel">Select Modules:</h1>
+                        <button type="button" class="modal-close-btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="POST" action="" novalidate>
+                        {{form.hidden_tag()}}
+                        <div class="modal-body">
+                            <fieldset class="">
+                                {% for field in charfields %}
+                                    <div class="form">
+                                        <h5>{{moduleforms[field].label}}</h5>
+                                        {% if moduleforms[field].errors %}
+                                            {{moduleforms[field](class="form-control form-control-lg is-invalid")}}
+                                            <div class="invalid-feedback">
+                                                {% for error in errors %}
+                                                    <span>{{error}}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{moduleforms[field](class="form-control form-control-lg")}}
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </fieldset>
+                        </div>
+                        <div class="modal-footer mt-3">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            {{moduleforms.submit(class="btn btn-outline-info")}}
+                        </div>
+                    </form>
                 </div>
-                <form method="POST" action="" novalidate>
-                    {{form.hidden_tag()}}
-                    <div class="modal-body">
-                        <fieldset class="">
-                            <h5>Character name:</h5>
-                            <div class="form ms-3">
-                                {{moduleforms.CreateCharacterNameField(class="form-control form-control-lg")}}
-                            </div>
-                            <h5>Character info:</h5>
-                            <div class="form ms-3">
-                                {{moduleforms.CreateCharacterInfoField(class="form-control form-control-lg")}}
-                            </div>
-                        </fieldset>
-                    </div>
-                    <div class="modal-footer mt-3">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        {{moduleforms.submit(class="btn btn-outline-info")}}
-                    </div>
-                </form>
             </div>
         </div>
-    </div>
-
-
-    <h5>World name:</h5>
+    {% endif %}
     
     <form action="/delete_world/{{world_name}}" method="POST" class="card-button-back m-1"><button class="card" type="submit">delete world</button></form>
-
 {% endblock content %}
 
 {% block navbar_centre %}
@@ -131,7 +156,8 @@
         <fieldset class="col p-0">
             <div class="form">
                 {% if form.worldnamefield.errors %}
-                    {{form.worldnamefield(class="form-control form-control-lg is-invalid")}}
+                    <input class="is-invalid form-control form-control-lg form-worldnamechange" id="worldnamefield" name="worldnamefield" placeholder="{{world_name}}" type="text" value="">
+                    <!-- {{form.worldnamefield(class="form-control form-control-lg is-invalid")}} -->
                     <div class="invalid-feedback">
                         {% for error in form.worldnamefield.errors %}
                             <span>{{error}}</span>

@@ -1,8 +1,9 @@
 /* testing class */
 .test {
+  /* margin-top: 1000px; */
   color: red;
   background-color: blue;
-  background: green;
+  border-color: green;
 }
 
 body {
@@ -90,8 +91,10 @@ h1, h2, h3, h4, h5, h6 {
 
 .form-worldnamechange {
   border-color: #292929;
-  width: 200x;
   display: inline-block;
+  min-width: 134px; 
+  max-width: 234px;
+  /* width includes margin, border, and padding, so for the element width to be 100 width needs to be 134 */
 }
 
 .form-worldnamechange:hover {
@@ -100,6 +103,28 @@ h1, h2, h3, h4, h5, h6 {
 
 .fit-content {
   width: fit-content;
+}
+
+.btn-changetheme {
+  background-color: #00000000;
+  border: #0194ab, solid, 1px;
+  /* #0194ab, #dee2e6 */
+  border-radius: 35px;
+  position: fixed;
+  left: 95%;
+  top: 90%;
+  margin: 2rem;
+  padding: 3px;
+  width: 70px;
+  height: 70px;
+  transform: translate(-100%, -100%);
+}
+
+.themeimg {
+  width: 50px;
+  height: 50px;
+  filter: invert(61%) sepia(90%) saturate(465%) hue-rotate(140deg);
+  /* filter: invert(40%) sepia(0%) saturate(500%) hue-rotate(140deg); */
 }
 
 .btn-worldnamechange {
@@ -114,6 +139,10 @@ h1, h2, h3, h4, h5, h6 {
 
 .button-padding {
   padding-block: 7px
+}
+
+.createbox {
+  background-color: #ffffff0d;
 }
 
 .card {
@@ -156,7 +185,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .card-CharCreator {
   width: 200px;
-  height: 500px;
+  height: fit-content;
   text-align: start;
   justify-content: start;
   display:block;

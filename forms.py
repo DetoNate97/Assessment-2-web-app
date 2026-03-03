@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField
-from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, InputRequired
+from wtforms.validators import Length, EqualTo, ValidationError, InputRequired
 
 class RegisterForm(FlaskForm):
     FloatingUsername = StringField('Username', validators=[InputRequired(), Length(min=2, max=20)], render_kw={"placeholder": ""})
@@ -53,6 +53,8 @@ class ChangeWorldNameForm(FlaskForm):
 class ModuleForms(FlaskForm):
     CreateCharacterNameField = StringField('Character Name')
     CreateCharacterInfoField = StringField('Character Info')
+    extrafield = StringField('extra field')
+    CharFields = ("CreateCharacterNameField", "CreateCharacterInfoField", "extrafield")
     submit = SubmitField('create character')
 
 
