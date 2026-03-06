@@ -56,12 +56,12 @@
     </header>
 
     <!-- flash messages -->
-    <header id="hide" class="site-header">
-        <div class="fixed-top alertmargin">
+    <header  class="site-header fixed-top">
+        <div class="fixed-top alertmargin" id="flash" style="display: none;">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
-                        <div class="alert alert-{{category}} container-fluid row" id="flash" style="display: none;">
+                        <div class="alert alert-{{category}} container-fluid row">
                             <div class="col m-1">
                                 {{message}}
                             </div>

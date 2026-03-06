@@ -58,12 +58,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .form-floating input {
-  background-color: #292929;
+  background-color: #00000000;
   color: #ffffff
 }
 
 .form-floating input:focus {
-  background-color: #292929;
+  background-color: #00000000;
   color: #ffffff
 }
 
@@ -72,7 +72,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .form input {
-  background-color: #292929;
+  background-color: #00000000;
   color: #ffffff
 }
 
@@ -81,7 +81,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .form input:focus {
-  background-color: #292929;
+  background-color: #00000000;
   color: #ffffff
 }
 
@@ -184,12 +184,25 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .card-CharCreator {
-  width: 200px;
+  width: 240px;
   height: fit-content;
   text-align: start;
   justify-content: start;
   display:block;
   padding: 0;
+}
+
+.offcanvas-char {
+  max-width: 230px;
+  background: #393939;
+  border: #494949, 2px;
+
+}
+
+.btn-newchar {
+  max-width: 38px;
+  max-height: 38px;
+  padding-top: 5px;
 }
 
 .checkbox {
@@ -304,11 +317,15 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
 }
 
+.alert {
+  margin: 0;
+}
+
 #flash {
   position: absolute;
   transition: top 0.6s ease-out;
   top: 0;
-  left: 10px;
+  margin-inline: 1%;
 }
 
 /* 

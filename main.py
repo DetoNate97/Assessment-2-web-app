@@ -229,15 +229,16 @@ def open_world(world_name):
             for line in file:
                 data.append(json.loads(line))
     except:
-        print("no db? :megamind:")
+        print("no db? :megamind:") # can just delete this
     for i in data:
         if i["name"] == world_name:
             modules = i["modules"]
             pass # for some reason pass works here but the one to change name needs break
     session['world_modules'] = modules
+    session['world_name'] = world_name # added for delete char. probably would have been useful for other stuff earlier.
     return redirect(url_for('world', world_name=world_name))
 
-# rename these to create_new_(text)
+# rename these to create_new_(text). also they broken again
 @app.route('/run_function_book', methods=['POST'])
 def run_function_book():
     '''
@@ -376,11 +377,12 @@ def world(world_name):
             with open(user_worlds, 'w') as file:
                 for obj in data:
                     file.write(json.dumps(obj) + "\n")
+            return redirect(url_for("world", world_name=world_name))
         else:
             flash("enter the info", "danger")
     if form.validate_on_submit() and not moduleforms.CreateCharacterNameField.data and not form.worldnamefield.data:
-        flash("bro really trying to break this. do you want a cookie for that?", "danger")
-    # its possible to break it by entering values into all 3 and then submitting. fix it
+        flash("please fill a field", "danger")
+    # if submit and all values: do all of it. also change to elif.
     return render_template(f'world.html', world_name=world_name, modules=modules, form=form, moduleforms=moduleforms, charfields=charfields, characters=characters)
 
 @app.route('/delete_world/<world_name>', methods=['POST'])
@@ -404,8 +406,31 @@ def delete_world(world_name):
         # write all the saved lines back:
         for obj in data:
             file.write(json.dumps(obj) + "\n")
-    # thus all the lines that meet the condition are not written back into the json, and are deleted.
+    # thus all the lines that meet the condition are not written back into the json, and are therefore deleted.
+    # damn im bringing english into this now
     return redirect(url_for('home'))
+
+@app.route('/delete_char/<char_name>', methods=['GET','POST'])
+def delete_char(char_name):
+    user_worlds = session.get('user_worlds')
+    world_name = session.get('world_name')
+    data = []
+    kept_chars = {}
+    with open(user_worlds, "r") as file:
+                for line in file:
+                    world = json.loads(line)
+                    data.append(world)
+    for world in data:
+        if world['name'] == world_name:
+            for character in world['characters']:
+                if character != char_name:
+                    kept_chars[character] = world['characters'][character]
+            world['characters'] = kept_chars
+    if data:
+        with open(user_worlds, 'w') as file:
+            for obj in data:
+                file.write(json.dumps(obj) + "\n")
+    return redirect(url_for("world", world_name=world_name))
 
 if __name__ == '__main__': # runs if file is run as script, but not if its imported
     app.run(debug=True, port=5000, host="0.0.0.0")
