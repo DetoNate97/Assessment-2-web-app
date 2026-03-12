@@ -1,22 +1,4 @@
-// credit ai for most of this code. i just stuck together pieces and changed values to make it do what i want
-
-// flash appear animation:
-document.addEventListener("DOMContentLoaded", () => {
-    const flash = document.getElementById("flash");
-    // move above screen
-    setTimeout(() => {
-        // flash.style.transition = "all 0s";
-        flash.style.top = "-120px";
-    }, 0);
-    // make visable
-    setTimeout(() => {
-        flash.style.display='';
-    }, 70);
-    // move down
-    setTimeout(() => {
-        flash.style.top = "0px";
-    }, 80);
-});
+// credit ai for most of this code. i just stuck together pieces and changed the values to make it do what i want
 
 // flash hide animation:
 function hide() {
@@ -27,6 +9,29 @@ function hide() {
         document.getElementById('flash').style.display='none'
     }, 500);
 }
+
+// flash appear animation:
+// wait for page load
+document.addEventListener("DOMContentLoaded", () => {
+    const flash = document.getElementById("flash");
+    // move above screen
+    setTimeout(() => {
+        flash.style.top = "-120px";
+    }, 0);
+    // make visable
+    setTimeout(() => {
+        flash.style.display='';
+    }, 70);
+    // move down
+    setTimeout(() => {
+        flash.style.top = "0px";
+    }, 80);
+    // after some time automatically close
+    // add a moving bar to show when it will close
+    setTimeout(() => {
+        hide()
+    }, 7000);
+});
 
 // swap theme css on click: (unused)
 function swapCSS() {

@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, HiddenField
 from wtforms.validators import Length, EqualTo, ValidationError, InputRequired
 
 class RegisterForm(FlaskForm):
@@ -19,7 +19,7 @@ class LoginForm(FlaskForm):
 
 class CustomSelectForm(FlaskForm):
     # add a name field.
-    worldnamefield = StringField('world_name', render_kw={"placeholder": "New_world", "value": ""})
+    worldnamefield = StringField('world_name')
     # characters:
     CharCreator = BooleanField('Character Creator', default="checked")
     # setting
@@ -47,17 +47,18 @@ class CustomSelectForm(FlaskForm):
     # fields are split bc there are subheadings
 
 class ChangeWorldNameForm(FlaskForm):
-    worldnamefield = StringField('world_name', render_kw={"placeholder": "{{world_name}}", "value": ""})
+    worldnamefield = StringField('world_name', render_kw={"value": ""})
     submit = SubmitField('Change')
 
-class ModuleForms(FlaskForm):
+class CharForms(FlaskForm):
     CreateCharacterNameField = StringField('Character Name')
     CreateCharacterInfoField = StringField('Character Info')
     extrafield = StringField('extra field')
     CharFields = ("CreateCharacterNameField", "CreateCharacterInfoField", "extrafield")
     submit = SubmitField('create character')
 
-
-# def validate_username(self, username):
-#     if not username.data.isalnum():
-#         raise ValidationError
+    hiddencharname = StringField(render_kw={'style': 'display:none', 'value':'none'})
+    ChangeCharacterName = StringField('Character Name')
+    ChangeCharacterInfo = StringField('Character Info')
+    changeextrafield = StringField('extra field')
+    EditFields = ("ChangeCharacterName", "ChangeCharacterInfo", "changeextrafield")

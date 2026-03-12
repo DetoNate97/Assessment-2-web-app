@@ -1,9 +1,10 @@
 from flask import Flask, render_template, url_for, redirect, flash, session
 from flask_login import login_user, logout_user # not used, but remember to use next time i need to make a login
-from forms import RegisterForm, LoginForm, CustomSelectForm, ChangeWorldNameForm, ModuleForms
+from forms import RegisterForm, LoginForm, CustomSelectForm, ChangeWorldNameForm, CharForms
 import os, sqlite3, secrets, json, time
 from cryptography.fernet import Fernet
 from werkzeug.security import generate_password_hash, check_password_hash
+
 
 # alternate security modules: import hashlib, zlib
 # print(hashlib.algorithms_available)
@@ -60,9 +61,10 @@ db_path = os.path.join("database", "database.db")
 # connect to the database:
 try:
     DB = sqlite3.connect(db_path, check_same_thread=False) # "check_same_thread=False" fix used from assessment 1.
-    print(f"Connected")
+    print(f" * Connected to database")
 except sqlite3.OperationalError as error:
     print(f"Error: {error}")
+    exit()
 
 # website routes:
 @app.route('/')
@@ -148,7 +150,7 @@ def register():
 @app.route('/home', methods=['GET', 'POST'])
 def home():
     '''
-    Handles the home page. this is where all the cards for the user's worlds are displayed. slightly inspired by google docs/canvas.
+    Handles the home page. this is where all the cards for the user's worlds are displayed. slightly inspired by google docs
 
     Methods: 
     GET: render the home.html with the form in the modal.
@@ -322,8 +324,9 @@ def world(world_name):
     user_worlds = session.get('user_worlds')
     data = []
     form = ChangeWorldNameForm()
-    moduleforms = ModuleForms()
-    charfields = moduleforms.CharFields
+    Charforms = CharForms()
+    charfields = Charforms.CharFields
+    editfields = Charforms.EditFields
 
     # redirect to login if there is no user logged in: (this prevents a crash when saving the py files)
     if not current_user:
@@ -339,51 +342,97 @@ def world(world_name):
             if i["name"] == world_name:
                 characters = i["characters"]
         data = []
-    # if the ........ continue this later
-    if form.validate_on_submit() and form.worldnamefield.data:
-        # renaming world:
-        # save current data
+    # if the form is submitted, check which fields have been filled
+    if form.validate_on_submit():
+        # this section is really long so i added big gaps
+        # since there are many forms on this one page, it needs to check which one was filled and submitted
+
+        #
+        # set all the fields to a variable for easy checking
+        #
+        charname = Charforms.CreateCharacterNameField.data
+        charinfo = Charforms.CreateCharacterInfoField.data
+        extrainfo = Charforms.extrafield.data
+        editcharname = Charforms.ChangeCharacterName.data
+        editcharinfo = Charforms.ChangeCharacterInfo.data
+        editextrainfo = Charforms.changeextrafield.data
+
+        #
+        # check if the world name field was filled
+        #
         if form.worldnamefield.data:
             with open(user_worlds, "r") as file:
                 for line in file:
                     world = json.loads(line)
                     data.append(world)
-            # change the name of the world that matches the current world to the new name
+            # check if a world already has that name
+            for i in data:
+                if i['name'] == form.worldnamefield.data:
+                    flash('cannot rename world, a world already has that name', 'danger')
+                    return redirect(url_for('world', world_name = world_name))
             for i in data:
                 if i["name"] == world_name:
                     i["name"] = form.worldnamefield.data
-                    break
+                    break # makes sure only 1 world gets changed
             # write the edited version back into json
             with open(user_worlds, 'w') as file:
-                # write all the saved lines back:
                 for obj in data:
                     file.write(json.dumps(obj) + "\n")
-            # add check so that 2 worlds cant be named the same
-            return redirect(url_for("world", world_name=form.worldnamefield.data))
+            if not charname and not charinfo and not extrainfo:
+                return redirect(url_for("world", world_name=form.worldnamefield.data))
+        
+        #
+        # check if any of the character creation fields were filled
+        #
+        if charname or charinfo or extrainfo:
+            if charname and charinfo and extrainfo:
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        data.append(world)
+                for i in data:
+                    if i["name"] == world_name:
+                        i["characters"][charname] = [charinfo, extrainfo]
+                with open(user_worlds, 'w') as file:
+                    for obj in data:
+                        file.write(json.dumps(obj) + "\n")
+                return redirect(url_for("world", world_name=world_name))
+            else:
+                flash('please fill all fields', 'danger')
+
+        #
+        # check if any of the edit fields were filled
+        #
+        if editcharname or editcharinfo or editextrainfo:
+            if editcharname and editcharinfo and editextrainfo:
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        data.append(world)
+                for i in data:
+                    if i["name"] == world_name:
+                        for char in i['characters']:
+                            if char == Charforms.hiddencharname.data:
+                                i['characters'][char] = [editcharinfo, editextrainfo]
+                with open(user_worlds, 'w') as file:
+                    for obj in data:
+                        file.write(json.dumps(obj) + "\n")
+                return redirect(url_for("world", world_name=world_name))
+            else:
+                flash('make sure all fields are filled', 'danger')
+                return redirect(url_for("world", world_name=world_name))       
+
+        # 
+        # if none of the other if statements are met
+        # 
         else:
-            flash("Invalid world name, please enter a name.", "danger")
-    if moduleforms.validate_on_submit() and moduleforms.CreateCharacterNameField.data:
-        charname = moduleforms.CreateCharacterNameField.data
-        charinfo = moduleforms.CreateCharacterInfoField.data
-        extra = moduleforms.extrafield.data
-        if charname and charinfo:
-            with open(user_worlds, "r") as file:
-                for line in file:
-                    world = json.loads(line)
-                    data.append(world)
-            for i in data:
-                if i["name"] == world_name:
-                    i["characters"][charname] = [charinfo, extra]
-            with open(user_worlds, 'w') as file:
-                for obj in data:
-                    file.write(json.dumps(obj) + "\n")
-            return redirect(url_for("world", world_name=world_name))
-        else:
-            flash("enter the info", "danger")
-    if form.validate_on_submit() and not moduleforms.CreateCharacterNameField.data and not form.worldnamefield.data:
-        flash("please fill a field", "danger")
-    # if submit and all values: do all of it. also change to elif.
-    return render_template(f'world.html', world_name=world_name, modules=modules, form=form, moduleforms=moduleforms, charfields=charfields, characters=characters)
+            flash("please fill a field", "danger")
+        # why do these if statements act like elif statements?
+        # FIGURED IT OUT: EACH SUBMIT ONLY SUBMITS ITS OWN FIELDS, SO ALL THE OTHERS ARE EMPTY EVEN IF THEY HAVE DATA
+        # anyway make sure every combination of filled and unfilled fields has an outcome that doesnt crash
+
+    # maybe i should add all the jinja variables to a list or smth so that it doesnt go all the way out there -->                                                                              here
+    return render_template(f'world.html', world_name=world_name, modules=modules, form=form, Charforms=Charforms, charfields=charfields, editfields=editfields, characters=characters, editdata="")
 
 @app.route('/delete_world/<world_name>', methods=['POST'])
 def delete_world(world_name):

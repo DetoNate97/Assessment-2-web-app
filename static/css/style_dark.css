@@ -192,7 +192,7 @@ h1, h2, h3, h4, h5, h6 {
   padding: 0;
 }
 
-.offcanvas-char {
+.offcanvas {
   max-width: 230px;
   background: #393939;
   border: #494949, 2px;
@@ -294,7 +294,7 @@ h1, h2, h3, h4, h5, h6 {
   background: #d1e7dd;
 }
 
-.modal-close-btn {
+.btn-close {
   filter: invert(1) grayscale(100%) brightness(200%);
 }
 

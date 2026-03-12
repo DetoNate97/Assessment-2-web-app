@@ -1,3 +1,2 @@
-{"name": "test", "modules": ["CharCreator", "Historical", "Maps", "Locations", "Hierarchy", "Factions", "Laws", "Cultures", "Technology", "Languages", "Currency", "Gameplay", "Magic", "Quests"], "characters": {"test": ["info"]}}
-{"name": "New_Book", "modules": ["CharCreator", "Historical", "Maps", "Locations", "Hierarchy", "Factions", "Laws", "Cultures", "Technology", "Languages", "Currency"]}
+{"name": "test", "modules": ["CharCreator", "Historical", "Maps", "Locations", "Hierarchy", "Factions", "Laws", "Cultures", "Technology", "Languages", "Currency", "Gameplay", "Magic", "Quests"], "characters": {"a": ["a", "a"], "test": ["test", "test"], "1": ["2", "3"], "2": ["3", "4"], "aa": ["aa", "aa"]}}
 {"name": "New_World", "modules": ["CharCreator", "Historical", "Maps", "Locations", "Hierarchy", "Factions", "Laws", "Cultures", "Technology", "Languages", "Currency", "Gameplay", "Magic", "Quests"], "characters": {"aa": ["aa", "aa"]}}
