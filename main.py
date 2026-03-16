@@ -1,9 +1,10 @@
 from flask import Flask, render_template, url_for, redirect, flash, session
 from flask_login import login_user, logout_user # not used, but remember to use next time i need to make a login
-from forms import RegisterForm, LoginForm, CustomSelectForm, ChangeWorldNameForm, CharForms
+from forms import RegisterForm, LoginForm, CustomSelectForm, ChangeWorldNameForm, CharForms, MapForm
 import os, sqlite3, secrets, json, time
 from cryptography.fernet import Fernet
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 
 
 # alternate security modules: import hashlib, zlib
@@ -17,6 +18,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_hex(16)
+app.config['MAPS_FOLDER'] = os.path.join("static", "maps")
 key = Fernet.generate_key()
 cipher = Fernet(key)
 KEY = key.decode()
@@ -325,8 +327,16 @@ def world(world_name):
     data = []
     form = ChangeWorldNameForm()
     Charforms = CharForms()
+    Mapform = MapForm()
     charfields = Charforms.CharFields
     editfields = Charforms.EditFields
+    ext = ""
+    filetypes = ['jpg', 'png', 'webp', 'jpeg', 'jfif', 'avif', 'gif']
+    
+    for type in filetypes:
+        if os.path.exists(os.path.join(app.config['MAPS_FOLDER'], f"{current_user}_{world_name}_map.{type}")):
+            ext = type
+
 
     # redirect to login if there is no user logged in: (this prevents a crash when saving the py files)
     if not current_user:
@@ -350,12 +360,12 @@ def world(world_name):
         #
         # set all the fields to a variable for easy checking
         #
-        charname = Charforms.CreateCharacterNameField.data
-        charinfo = Charforms.CreateCharacterInfoField.data
-        extrainfo = Charforms.extrafield.data
+        charname = Charforms.CreateCharacterName.data
+        chardesc = Charforms.CreateCharacterDescription.data
+        charback = Charforms.CreateCharacterBackstory.data
         editcharname = Charforms.ChangeCharacterName.data
-        editcharinfo = Charforms.ChangeCharacterInfo.data
-        editextrainfo = Charforms.changeextrafield.data
+        editchardesc = Charforms.ChangeCharacterDescription.data
+        editcharback = Charforms.ChangeCharacterBackstory.data
 
         #
         # check if the world name field was filled
@@ -378,21 +388,21 @@ def world(world_name):
             with open(user_worlds, 'w') as file:
                 for obj in data:
                     file.write(json.dumps(obj) + "\n")
-            if not charname and not charinfo and not extrainfo:
+            if not charname and not chardesc and not charback:
                 return redirect(url_for("world", world_name=form.worldnamefield.data))
         
         #
         # check if any of the character creation fields were filled
         #
-        if charname or charinfo or extrainfo:
-            if charname and charinfo and extrainfo:
+        if charname or chardesc or charback:
+            if charname and chardesc and charback:
                 with open(user_worlds, "r") as file:
                     for line in file:
                         world = json.loads(line)
                         data.append(world)
                 for i in data:
                     if i["name"] == world_name:
-                        i["characters"][charname] = [charinfo, extrainfo]
+                        i["characters"][charname] = [chardesc, charback]
                 with open(user_worlds, 'w') as file:
                     for obj in data:
                         file.write(json.dumps(obj) + "\n")
@@ -403,8 +413,8 @@ def world(world_name):
         #
         # check if any of the edit fields were filled
         #
-        if editcharname or editcharinfo or editextrainfo:
-            if editcharname and editcharinfo and editextrainfo:
+        if editcharname or editchardesc or editcharback:
+            if editcharname and editchardesc and editcharback:
                 with open(user_worlds, "r") as file:
                     for line in file:
                         world = json.loads(line)
@@ -412,8 +422,8 @@ def world(world_name):
                 for i in data:
                     if i["name"] == world_name:
                         for char in i['characters']:
-                            if char == Charforms.hiddencharname.data:
-                                i['characters'][char] = [editcharinfo, editextrainfo]
+                            if char == Charforms.HiddenCharName.data:
+                                i['characters'][char] = [editchardesc, editcharback]
                 with open(user_worlds, 'w') as file:
                     for obj in data:
                         file.write(json.dumps(obj) + "\n")
@@ -421,6 +431,20 @@ def world(world_name):
             else:
                 flash('make sure all fields are filled', 'danger')
                 return redirect(url_for("world", world_name=world_name))       
+            
+        if Mapform.Map.data:
+            # get file from form
+            file = Mapform.Map.data
+            # make sure the filename is ascii
+            filename = secure_filename(file.filename)
+            # get the filetype extension
+            ext = file.filename.rsplit('.', 1)[1].lower()
+            # rename the file
+            filename = f"{current_user}_{world_name}_map.{ext}"
+            # append the folder path to the file to make the full file path
+            filepath = os.path.join(app.config['MAPS_FOLDER'], filename)
+            # save file
+            file.save(filepath)
 
         # 
         # if none of the other if statements are met
@@ -431,8 +455,8 @@ def world(world_name):
         # FIGURED IT OUT: EACH SUBMIT ONLY SUBMITS ITS OWN FIELDS, SO ALL THE OTHERS ARE EMPTY EVEN IF THEY HAVE DATA
         # anyway make sure every combination of filled and unfilled fields has an outcome that doesnt crash
 
-    # maybe i should add all the jinja variables to a list or smth so that it doesnt go all the way out there -->                                                                              here
-    return render_template(f'world.html', world_name=world_name, modules=modules, form=form, Charforms=Charforms, charfields=charfields, editfields=editfields, characters=characters, editdata="")
+    # maybe i should add all the jinja variables to a list or smth so that it doesnt go all the way out there -->                                                                                                        here
+    return render_template(f'world.html', world_name=world_name, current_user=current_user, modules=modules, form=form, Charforms=Charforms, Mapform=Mapform, charfields=charfields, editfields=editfields, characters=characters, editdata="", ext=ext)
 
 @app.route('/delete_world/<world_name>', methods=['POST'])
 def delete_world(world_name):

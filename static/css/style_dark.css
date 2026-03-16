@@ -76,6 +76,15 @@ h1, h2, h3, h4, h5, h6 {
   color: #ffffff
 }
 
+.form-control {
+  background-color: #00000000;
+  color: #ffffff
+}
+.form-control:focus {
+  background-color: #00000000;
+  color: #ffffff
+}
+
 .form ::placeholder {
   color: #aaaaaa
 }
@@ -100,6 +109,28 @@ h1, h2, h3, h4, h5, h6 {
 .form-worldnamechange:hover {
   border-color: #aaaaaa
 }
+
+
+/* copilot because bootstrap is a pain */
+.form-fileupload {
+  color: #494949;
+  border-color: #aaaaaa;
+  padding: 8px 16px;
+  border-radius: 6px;
+  margin-right: 12px;
+  cursor: pointer;
+  --bs-form-file-button-bg: var(#4a90e2);
+}
+:root {
+  --bs-form-file-button-bg: var(#4a90e2);
+  /* --bs-tertiary-bg: #4a90e2 */
+}
+input[type="file"]::file-selector-button {
+  background-color: #aaaaaa;
+  color: #292929;
+}
+
+
 
 .fit-content {
   width: fit-content;
@@ -156,6 +187,11 @@ h1, h2, h3, h4, h5, h6 {
   display: flex; 
   justify-content: center; 
   align-items: center; 
+}
+
+.card-fitcontent {
+  width: fit-content;
+  height: fit-content;
 }
 
 .card-button-back {
@@ -224,7 +260,11 @@ h1, h2, h3, h4, h5, h6 {
 
 .link { 
   color: #ffffff;
-  text-decoration: none
+  text-decoration: none;
+}
+
+.link-bold {
+  font-weight: bold
 }
 
 .link:hover {
