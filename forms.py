@@ -24,20 +24,20 @@ class CustomSelectForm(FlaskForm):
     # characters:
     CharCreator = BooleanField('Character Creator', default="checked")
     # setting
-    Historical = BooleanField('Historical Events and Folklore', default="checked")
+    Historical = BooleanField('Historical Events and Folklore', render_kw={'disabled': "", 'class': 'indeterminate'})
     Maps = BooleanField('Maps', default="checked")
-    Locations = BooleanField('Locations', default="checked")
-    Hierarchy = BooleanField('Hierarchy System', default="checked")
-    Factions = BooleanField('Factions and Aliances', default="checked")
-    Laws = BooleanField('Laws', default="checked")
-    Cultures = BooleanField('Cultures', default="checked")
-    Technology = BooleanField('Technological Advancements', default="checked")
-    Languages = BooleanField('Languages', default="checked")
-    Currency = BooleanField('Currency System', default="checked")
+    Locations = BooleanField('Locations', render_kw={'disabled': "", 'class': 'indeterminate'})
+    Hierarchy = BooleanField('Hierarchy System', render_kw={'disabled': "", 'class': 'indeterminate'})
+    Factions = BooleanField('Factions and Aliances', render_kw={'disabled': "", 'class': 'indeterminate'})
+    Laws = BooleanField('Laws', render_kw={'disabled': "", 'class': 'indeterminate', 'class': 'indeterminate'})
+    Cultures = BooleanField('Cultures', render_kw={'disabled': "", 'class': 'indeterminate'})
+    Technology = BooleanField('Technological Advancements', render_kw={'disabled': "", 'class': 'indeterminate'})
+    Languages = BooleanField('Languages', render_kw={'disabled': "", 'class': 'indeterminate'})
+    Currency = BooleanField('Currency System', render_kw={'disabled': "", 'class': 'indeterminate'})
     # gameplay
-    Gameplay = BooleanField('Gameplay Mechanics', default="checked")
-    Magic = BooleanField('Magic System', default="checked")
-    Quests = BooleanField('Player Interactions and Quests', default="checked")
+    Gameplay = BooleanField('Gameplay Mechanics', render_kw={'disabled': "", 'class': 'indeterminate'})
+    Magic = BooleanField('Magic System', render_kw={'disabled': "", 'class': 'indeterminate'})
+    Quests = BooleanField('Player Interactions and Quests', render_kw={'disabled': "", 'class': 'indeterminate'})
 
     submit = SubmitField('Create World')
 
@@ -60,7 +60,7 @@ class CharForms(FlaskForm):
 
     HiddenCharName = StringField(render_kw={'style': 'display:none', 'value':'none'}) # for checking which character is being edited, since the name can be changed
     ChangeCharacterName = StringField('Character Name')
-    ChangeCharacterDescription = TextAreaField('Character Description')
+    ChangeCharacterDescription = TextAreaField('Character Description', default="")
     ChangeCharacterBackstory = TextAreaField('Character Backstory')
     submit_edit = SubmitField('Submit Changes')
     EditFields = ("ChangeCharacterName", "ChangeCharacterDescription", "ChangeCharacterBackstory")

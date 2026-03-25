@@ -74,3 +74,9 @@ function toggleTheme() {
     
     // figure out how to use localStorage for remembering user? or use cookies instead?
 }
+
+document.querySelectorAll(".indeterminate").forEach(cb => {
+    cb.indeterminate = true;
+});
+
+document.getElementById("indeterminate").indeterminate = true;

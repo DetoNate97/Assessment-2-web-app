@@ -23,19 +23,32 @@
                             </div>
 
                             
+<!-- 
+<form method="POST" action="" novalidate enctype="form-data">
+    {{form.hidden_tag()}}
+    <fieldset class="form">
+        <h6>{{Mapform.Map.label}}</h6>
+        {{Mapform.Map(class="form-fileupload form-control form-control-lg")}}  
+    </fieldset>
+    {{Mapform.submit(class="btn btn-outline-info")}}
+</form>
+ -->
+
 
                             <form method="POST" action="" novalidate enctype="multipart/form-data">
                                 {{form.hidden_tag()}}
                                 <div class="modal-body">
                                     <fieldset class="form">
-
                                         <h6>{{Mapform.Map.label}}</h6>
-                                        {{Mapform.Map(class="form-fileupload form-control form-control-lg")}}
-                                        
+                                        {{Mapform.Map(class="form-fileupload form-control form-control-lg")}}  
                                     </fieldset>
                                 </div>
                                 <div class="modal-footer mt-3">
+                                    
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    {% if ext %}
+                                        <a href="/delete_map/{{world_name}}" class="btn btn-outline-danger">Delete Map</a>
+                                    {% endif %}
                                     {{Mapform.submit(class="btn btn-outline-info")}}
                                 </div>
                             </form>
@@ -47,7 +60,6 @@
 
 
         {% if "CharCreator" in modules %}
-            
             <!-- card -->
             <div class="card card-CharCreator m-1 p-1">
                 <div class="row m-1 justify-content-center">
@@ -60,7 +72,7 @@
                             <p class="mb-0 mt-3">{{char}} --- 
                             <a href="/delete_char/{{char}}" class="link link-bold">delete</a> / 
                             
-                            <a data-bs-toggle="offcanvas" data-bs-target="#offcanvas{{char}}" href="" role="button" aria-controls="offcanvas{{char}}" class="link link-bold">edit</a>
+                            <a data-bs-toggle="offcanvas" data-bs-target="#offcanvas{{ char|replace(' ', '_') }}" href="" role="button" aria-controls="offcanvas{{ char|replace(' ', '_') }}" class="link link-bold">edit</a>
 
                             </p>
                             <span class="m-0">
@@ -112,9 +124,9 @@
 
             {% for char in characters %}
                 <!-- editing offcanvas for {{char}} -->
-                <div class="offcanvas offcanvas-end hide" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvas{{char}}" aria-labelledby="offcanvas{{char}}Label">
+                <div class="offcanvas offcanvas-end hide" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvas{{ char|replace(' ', '_') }}" aria-labelledby="offcanvas{{ char|replace(' ', '_') }}Label">
                     <div class="offcanvas-header">
-                        <h5 class="offcanvas-title" id="offcanvas{{char}}Label">Edit Character</h5>
+                        <h5 class="offcanvas-title" id="offcanvas{{ char|replace(' ', '_') }}Label">Edit Character</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                     </div>
                     <div class="offcanvas-body">
@@ -129,9 +141,11 @@
                                             {% if field == "ChangeCharacterName" %}
                                                 {{Charforms[field](class="form-control form-control-lg", value=char )}}
                                             {% elif field == "ChangeCharacterDescription" %}
-                                                {{Charforms[field](class="form-control form-control-lg", value=characters[char][0] )}}
+                                                <!-- {{Charforms[field](class="form-control form-control-lg", default=characters[char][0] )}} --> <!-- sadly textareas dont allow changing the value in the html when using flask forms -->
+                                                <textarea class="form-control form-control-lg" id="ChangeCharacterDescription" name="ChangeCharacterDescription">{{characters[char][0]}}</textarea>
                                             {% elif field == "ChangeCharacterBackstory" %}
-                                                {{Charforms[field](class="form-control form-control-lg", value=characters[char][1] )}}
+                                                <!-- {{Charforms[field](class="form-control form-control-lg", value=characters[char][1] )}} -->
+                                                <textarea class="form-control form-control-lg" id="ChangeCharacterBackstory" name="ChangeCharacterBackstory">{{characters[char][1]}}</textarea>
                                             {% endif %}
                                             <!-- characters[char] -->
                                         </div>
@@ -145,15 +159,14 @@
                     </div>
                 </div>
             {% endfor %}
-
         {% endif %}
-
+        
+        <!--
         {% if "Historical" in modules %}
             <div class="card m-1">
                 placeholder for Historical module
             </div>
         {% endif %}
-
         {% if "Locations" in modules %}
             <div class="card m-1">
                 placeholder for Locations module
@@ -209,6 +222,7 @@
                 placeholder for Quests module
             </div>
         {% endif %}
+        -->
     </div>
 
     <form action="/delete_world/{{world_name}}" method="POST" class="card-button-back m-1"><button class="card" type="submit">delete world</button></form>

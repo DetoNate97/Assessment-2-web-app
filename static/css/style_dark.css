@@ -20,6 +20,12 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 20px;
 }
 
+.navbar {
+  background-color: #292929e0;
+  border-bottom: 1px solid #494949;
+  backdrop-filter: blur(5px);
+}
+
 .centred {
   position: absolute;
   top: 50%;
@@ -189,6 +195,7 @@ input[type="file"]::file-selector-button {
 
 .createbox {
   background-color: #ffffff0d;
+  border-radius: 10px;
 }
 
 .card {

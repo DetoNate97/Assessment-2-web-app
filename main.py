@@ -330,13 +330,15 @@ def world(world_name):
     Mapform = MapForm()
     charfields = Charforms.CharFields
     editfields = Charforms.EditFields
+
+    # checks the filetype of the currently saved map
     ext = ""
-    filetypes = ['jpg', 'png', 'webp', 'jpeg', 'jfif', 'avif', 'gif']
-    
+    filetypes = ['jpg', 'png', 'webp', 'jpeg', 'jfif', 'avif', 'gif'] # valid filetypes for map uploads
+    session['filetypes'] = filetypes
     for type in filetypes:
         if os.path.exists(os.path.join(app.config['MAPS_FOLDER'], f"{current_user}_{world_name}_map.{type}")):
             ext = type
-
+    session['ext'] = ext
 
     # redirect to login if there is no user logged in: (this prevents a crash when saving the py files)
     if not current_user:
@@ -352,6 +354,7 @@ def world(world_name):
             if i["name"] == world_name:
                 characters = i["characters"]
         data = []
+
     # if the form is submitted, check which fields have been filled
     if form.validate_on_submit():
         # this section is really long so i added big gaps
@@ -371,6 +374,10 @@ def world(world_name):
         # check if the world name field was filled
         #
         if form.worldnamefield.data:
+
+
+
+
             with open(user_worlds, "r") as file:
                 for line in file:
                     world = json.loads(line)
@@ -388,12 +395,21 @@ def world(world_name):
             with open(user_worlds, 'w') as file:
                 for obj in data:
                     file.write(json.dumps(obj) + "\n")
-            if not charname and not chardesc and not charback:
-                return redirect(url_for("world", world_name=form.worldnamefield.data))
+
+            ext = session.get('ext')
+            current_user = session.get('current_user')
+            file = ""
+            if ext:
+                file = os.path.join(app.config['MAPS_FOLDER'], f"{current_user}_{world_name}_map.{ext}")
+            if file:
+                os.rename(file, os.path.join(app.config['MAPS_FOLDER'], f"{current_user}_{form.worldnamefield.data}_map.{ext}"))
+
+            return redirect(url_for("world", world_name=form.worldnamefield.data))
         
         #
         # check if any of the character creation fields were filled
         #
+
         if charname or chardesc or charback:
             if charname and chardesc and charback:
                 with open(user_worlds, "r") as file:
@@ -413,6 +429,7 @@ def world(world_name):
         #
         # check if any of the edit fields were filled
         #
+        print(editcharname, editchardesc, editcharback)
         if editcharname or editchardesc or editcharback:
             if editcharname and editchardesc and editcharback:
                 with open(user_worlds, "r") as file:
@@ -431,8 +448,16 @@ def world(world_name):
             else:
                 flash('make sure all fields are filled', 'danger')
                 return redirect(url_for("world", world_name=world_name))       
-            
+        
+
         if Mapform.Map.data:
+            filetypes = session.get('filetypes')
+            current = []
+            for type in filetypes:
+                if os.path.exists(os.path.join(app.config['MAPS_FOLDER'], f"{current_user}_{world_name}_map.{type}")):
+                    current.append(f"{current_user}_{world_name}_map.{type}")
+            for file in current:
+                os.remove(os.path.join(app.config['MAPS_FOLDER'], file))
             # get file from form
             file = Mapform.Map.data
             # make sure the filename is ascii
@@ -440,12 +465,14 @@ def world(world_name):
             # get the filetype extension
             ext = file.filename.rsplit('.', 1)[1].lower()
             # rename the file
-            filename = f"{current_user}_{world_name}_map.{ext}"
+            filename = f"{current_user}_{world_name}_map.{ext}"    
             # append the folder path to the file to make the full file path
             filepath = os.path.join(app.config['MAPS_FOLDER'], filename)
             # save file
             file.save(filepath)
+            return redirect(url_for("world", world_name=world_name))       
 
+        
         # 
         # if none of the other if statements are met
         # 
@@ -455,7 +482,7 @@ def world(world_name):
         # FIGURED IT OUT: EACH SUBMIT ONLY SUBMITS ITS OWN FIELDS, SO ALL THE OTHERS ARE EMPTY EVEN IF THEY HAVE DATA
         # anyway make sure every combination of filled and unfilled fields has an outcome that doesnt crash
 
-    # maybe i should add all the jinja variables to a list or smth so that it doesnt go all the way out there -->                                                                                                        here
+    # maybe i should add all the jinja variables to a list or smth so that it doesnt go all the way out there -->                                                                                                                                  here
     return render_template(f'world.html', world_name=world_name, current_user=current_user, modules=modules, form=form, Charforms=Charforms, Mapform=Mapform, charfields=charfields, editfields=editfields, characters=characters, editdata="", ext=ext)
 
 @app.route('/delete_world/<world_name>', methods=['POST'])
@@ -464,6 +491,15 @@ def delete_world(world_name):
     copilot helped
     how to delete a dictionary from ndjson
     '''
+
+    ext = session.get('ext')
+    current_user = session.get('current_user')
+    file = ""
+    if ext:
+        file = os.path.join(app.config['MAPS_FOLDER'], f"{current_user}_{world_name}_map.{ext}")
+    if file:
+        os.remove(file)
+
     world_name = world_name
     data = []
     user_worlds = session.get('user_worlds')
@@ -481,6 +517,8 @@ def delete_world(world_name):
             file.write(json.dumps(obj) + "\n")
     # thus all the lines that meet the condition are not written back into the json, and are therefore deleted.
     # damn im bringing english into this now
+
+
     return redirect(url_for('home'))
 
 @app.route('/delete_char/<char_name>', methods=['GET','POST'])
@@ -505,5 +543,20 @@ def delete_char(char_name):
                 file.write(json.dumps(obj) + "\n")
     return redirect(url_for("world", world_name=world_name))
 
+@app.route('/delete_map/<world_name>', methods=['GET','POST'])
+def delete_map(world_name):
+    ext = session.get('ext')
+    current_user = session.get('current_user')
+    file = os.path.join(app.config['MAPS_FOLDER'], f"{current_user}_{world_name}_map.{ext}")
+    os.remove(file)
+    return redirect(url_for("world", world_name=world_name))
+
+
 if __name__ == '__main__': # runs if file is run as script, but not if its imported
     app.run(debug=True, port=5000, host="0.0.0.0")
+
+
+'''
+
+
+'''
