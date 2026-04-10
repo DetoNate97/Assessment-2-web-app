@@ -3,13 +3,27 @@
 {% block content %}
     <!-- for now the following section will seperately check if each module has been selected, and if it is, display the elements for the module to function. -->
     <!-- the reason these need to be seperate is because each module has a different function, so a loop wont work, at least with my current structure. -->
+    
+    <label for="search">Search Content</label>
+    <input type="search" id="search" content-search>
+
+    
+
+    <div searches>
+        available searches:
+        <p>map</p>
+        <p>char</p>
+    </div>
+    
+    
+    
     <div class="row">
 
         {% if "Maps" in modules %}
-            <div class="card m-1 card-fitcontent p-2 resizable">
+            <div class="card m-1 card-fitcontent p-2 resizable" id="map">
                     
                 {% if ext %}
-                    <a data-bs-toggle="modal" data-bs-target="#CustomSelectModal" href="" role="button" aria-controls="Map"><img src="/static/maps/{{current_user}}_{{world_name}}_map.{{ext}}" alt="Map"></a>
+                    <a data-bs-toggle="modal" data-bs-target="#CustomSelectModal" href="" role="button" aria-controls="Map"><img src="/static/maps/{{current_user}}_{{world_name}}_map.{{ext}}" alt="Map" class="map"></a>
                 {% else %}
                     <button class="btn btn-outline-secondary m-1" data-bs-toggle="modal" data-bs-target="#CustomSelectModal">Upload map</button>
                 {% endif %}
@@ -21,19 +35,6 @@
                                 <h1 class="modal-title fs-5" id="CustomSelectModalLabel">Select Modules:</h1>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-
-                            
-<!-- 
-<form method="POST" action="" novalidate enctype="form-data">
-    {{form.hidden_tag()}}
-    <fieldset class="form">
-        <h6>{{Mapform.Map.label}}</h6>
-        {{Mapform.Map(class="form-fileupload form-control form-control-lg")}}  
-    </fieldset>
-    {{Mapform.submit(class="btn btn-outline-info")}}
-</form>
- -->
-
 
                             <form method="POST" action="" novalidate enctype="multipart/form-data">
                                 {{form.hidden_tag()}}
@@ -58,10 +59,9 @@
             </div>
         {% endif %}
 
-
         {% if "CharCreator" in modules %}
             <!-- card -->
-            <div class="card card-CharCreator m-1 p-1">
+            <div class="card card-CharCreator m-1 p-1" id="char">
                 <div class="row m-1 justify-content-center">
                     <h3 class="col-8 ms-2 ps-0">Characters</h3>
                     <a class="btn btn-outline-info btn-newchar col-8 me-3" data-bs-toggle="offcanvas" href="#offcanvas" role="button" aria-controls="offcanvas">+</a>
@@ -161,15 +161,16 @@
             {% endfor %}
         {% endif %}
         
+        {% if "Locations" in modules %}
+            <div class="card m-1">
+                placeholder for Locations module
+            </div>
+        {% endif %}
+
         <!--
         {% if "Historical" in modules %}
             <div class="card m-1">
                 placeholder for Historical module
-            </div>
-        {% endif %}
-        {% if "Locations" in modules %}
-            <div class="card m-1">
-                placeholder for Locations module
             </div>
         {% endif %}
         {% if "Hierarchy" in modules %}

@@ -6,6 +6,8 @@
   border-color: green;
 }
 
+
+
 body {
   background: #292929;
   color: #ffffff;
@@ -35,9 +37,11 @@ h1, h2, h3, h4, h5, h6 {
 
 .resizable {
   width: 300px;
-  max-width: 500px;
+  max-width: 1000px;
+  min-width: 100px;
   height: 200px;
-  max-height: 500px;
+  max-height: 1000px;
+  min-height: 100px;
   overflow: auto;
   resize: both;
   border: 2px solid #ccc;
@@ -46,6 +50,14 @@ h1, h2, h3, h4, h5, h6 {
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+.map{
+  border: 3px solid #00000000;
+  border-radius: 6px;
+}
+.map:hover {
+  border-color: #aaaaaaaa;
 }
 
 .welcomeprompt {
@@ -78,6 +90,8 @@ h1, h2, h3, h4, h5, h6 {
   color: #ffffff;
 }
 
+
+
 .form-floating input {
   background-color: #00000000;
   color: #ffffff
@@ -101,6 +115,7 @@ h1, h2, h3, h4, h5, h6 {
   background-color: #00000000;
   color: #ffffff
 }
+
 .form-control:focus {
   background-color: #00000000;
   color: #ffffff
@@ -131,8 +146,8 @@ h1, h2, h3, h4, h5, h6 {
   border-color: #aaaaaa
 }
 
-
 /* copilot because bootstrap is a pain */
+/* styles the file upload element */
 .form-fileupload {
   color: #494949;
   border-color: #aaaaaa;
@@ -150,8 +165,6 @@ input[type="file"]::file-selector-button {
   background-color: #aaaaaa;
   color: #292929;
 }
-
-
 
 .fit-content {
   width: fit-content;
@@ -388,6 +401,11 @@ input[type="file"]::file-selector-button {
   transition: top 0.6s ease-out;
   top: 0;
   margin-inline: 1%;
+}
+
+/* for search function: https://www.youtube.com/watch?v=TlP5WIxVirU */
+.hide {
+  display: none;
 }
 
 /* 

@@ -75,8 +75,38 @@ function toggleTheme() {
     // figure out how to use localStorage for remembering user? or use cookies instead?
 }
 
-document.querySelectorAll(".indeterminate").forEach(cb => {
-    cb.indeterminate = true;
-});
+// remove indeterminate stuff
 
-document.getElementById("indeterminate").indeterminate = true;
+
+
+// 
+// search stuff
+// 
+
+// search input
+const searchInput = document.querySelector("[content-search]")
+
+// update on search input change
+searchInput.addEventListener("input", e => {
+    // convert search to lowercase
+    const value = e.target.value.toLowerCase()
+
+    const mapIsVisible = 
+        searchesElement.children[0].textContent.includes(value)
+    map.classList.toggle("hide", !mapIsVisible)
+
+    const charIsVisible = 
+        searchesElement.children[1].textContent.includes(value)
+    char.classList.toggle("hide", !charIsVisible)
+
+    searchesElement.children.array.forEach(element => {
+        const isVisible = 
+            searchesElement.children[element].textContent.includes(value)
+        element.classList.toggle("hide", !isVisible)
+    });
+})
+
+const searchesElement = document.querySelector("[searches]")
+searchesArray = []
+
+console.log(searchesElement.children)

@@ -1,3 +1,4 @@
-{"name": "test", "modules": ["CharCreator", "Historical", "Maps", "Locations", "Hierarchy", "Factions", "Laws", "Cultures", "Technology", "Languages", "Currency", "Gameplay", "Magic", "Quests"], "characters": {"Bob": ["yoooo these work now", "kinda"], "Maurice": ["lil guy", "maurice, i cant move it move it any more"], "maybe i should add a character limit to these": ["because as you can see these can get very silly when trying to make them as long as possible", "although only an insane person would make their character name so long that it wraps onto the next line so it should be fine right? wait a minute..."]}}
-{"name": "map", "modules": ["CharCreator", "Maps"], "characters": {}}
-{"name": "map1", "modules": ["CharCreator", "Maps"], "characters": {}}
+{"name": "test", "modules": ["CharCreator", "Historical", "Maps", "Locations", "Hierarchy", "Factions", "Laws", "Cultures", "Technology", "Languages", "Currency", "Gameplay", "Magic", "Quests"], "characters": {"maybe i should add a character limit to these": ["because as you can see these can get very silly when trying to make them as long as possible", "although only an insane person would make their character name so long that it wraps onto the next line so it should be fine right? wait a minute..."]}}
+{"name": "Texas", "modules": ["CharCreator", "Maps"], "characters": {"John": ["He John", "John was a john when john johnned the long john. Gerard Way"]}}
+{"name": "world", "modules": ["CharCreator", "Maps"], "characters": {}}
+{"name": "emptiness", "modules": []}
