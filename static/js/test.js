@@ -33,18 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 7000);
 });
 
-// swap theme css on click: (unused)
-function swapCSS() {
-    // get current theme
-    const current = document.getElementById("theme").getAttribute("href");
-    // if current theme is dark
-    current == "/static/css/style_dark.css" 
-    // if true change to light
-    ? document.getElementById("theme").href = '/static/css/style_light.css'
-    // if false change to dark
-    : document.getElementById("theme").href = '/static/css/style_dark.css'
-}
-
 // Load saved theme on page load:
 document.addEventListener("DOMContentLoaded", () => {
     // read the theme saved to local storage
@@ -77,6 +65,11 @@ function toggleTheme() {
 
 // remove indeterminate stuff
 
+
+function deleteconfirm() {
+    const btn = document.getElementById("deleteconfirm");
+    btn.removeAttribute("disabled");
+}
 
 
 // 

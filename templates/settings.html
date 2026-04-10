@@ -1,15 +1,21 @@
 {% extends "index.html" %}
 
 {% block content %}
+<form action="/logout" method="POST" class="m-2"><button class="btn btn-outline-secondary" type="submit">Log Out</button></form>
 
 
+<button type="button" class="btn btn-outline-danger m-2" onclick="deleteconfirm();">Delete Account</button>
 
+<form action="/delete_account" method="POST" class="m-2"><button id="deleteconfirm" class="btn btn-outline-danger" type="submit" disabled>Confirm Delete Account</button></form>
+change details
 {% endblock content %}
 
 {% block navbar_centre %}
-
 <div class="mr-auto page">
     {{page}}
 </div>
-
 {% endblock navbar_centre %}
+
+{% block navbar_right %}
+    <a href="{{url_for('home')}}" class="me-2 link link-bold">Return Home</a>
+{% endblock navbar_right %}

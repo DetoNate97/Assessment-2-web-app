@@ -72,7 +72,7 @@
                             <p class="mb-0 mt-3">{{char}} --- 
                             <a href="/delete_char/{{char}}" class="link link-bold">delete</a> / 
                             
-                            <a data-bs-toggle="offcanvas" data-bs-target="#offcanvas{{ char|replace(' ', '_') }}" href="" role="button" aria-controls="offcanvas{{ char|replace(' ', '_') }}" class="link link-bold">edit</a>
+                            <a data-bs-toggle="offcanvas" data-bs-target="#offcanvas{{ char|replace(' ', '_') }}" href="#offcanvas{{ char|replace(' ', '_') }}" role="button" aria-controls="offcanvas{{ char|replace(' ', '_') }}" class="link link-bold">edit</a>
 
                             </p>
                             <span class="m-0">
@@ -124,7 +124,7 @@
 
             {% for char in characters %}
                 <!-- editing offcanvas for {{char}} -->
-                <div class="offcanvas offcanvas-end hide" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvas{{ char|replace(' ', '_') }}" aria-labelledby="offcanvas{{ char|replace(' ', '_') }}Label">
+                <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvas{{ char|replace(' ', '_') }}" aria-labelledby="offcanvas{{ char|replace(' ', '_') }}Label">
                     <div class="offcanvas-header">
                         <h5 class="offcanvas-title" id="offcanvas{{ char|replace(' ', '_') }}Label">Edit Character</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
@@ -256,8 +256,6 @@
 
 {% block navbar_right %}
 
-    <div class="red">
-        <a href="{{url_for('home')}}" class="me-2 link link-bold">Return Home</a>
-    </div>
+    <a href="{{url_for('home')}}" class="me-2 link link-bold">Return Home</a>
 
 {% endblock navbar_right %}

@@ -24,6 +24,8 @@ cipher = Fernet(key)
 KEY = key.decode()
 salt = os.urandom(16) # is this even used for anything? no, me, it isnt.
 
+
+
 def hash_password(password):
     '''
     currently unused function. hashes the input using werkzeug and returns it.
@@ -169,6 +171,12 @@ def home():
     page = "home"
     data = []
 
+
+    # temporary
+    filetypes = ['jpg', 'png', 'webp', 'jpeg', 'jfif', 'avif', 'gif'] # valid filetypes for map uploads. i should just make this a const like DB
+    session['filetypes'] = filetypes
+
+
     # attempt to open the stored worlds. if there is no file it means there are no stored worlds.
     try:
         with open(user_worlds, "r") as file:
@@ -211,6 +219,9 @@ def settings():
     methods
     '''
     page = "settings"
+    current_user = session.get('current_user')
+    if not current_user:
+        return redirect(url_for("login"))
     return render_template('settings.html', page=page)
 
 @app.route('/open_world/<world_name>', methods=['POST'])
@@ -333,7 +344,7 @@ def world(world_name):
 
     # checks the filetype of the currently saved map
     ext = ""
-    filetypes = ['jpg', 'png', 'webp', 'jpeg', 'jfif', 'avif', 'gif'] # valid filetypes for map uploads
+    filetypes = ['jpg', 'png', 'webp', 'jpeg', 'jfif', 'avif', 'gif'] # valid filetypes for map uploads. i should just make this a const like DB
     session['filetypes'] = filetypes
     for type in filetypes:
         if os.path.exists(os.path.join(app.config['MAPS_FOLDER'], f"{current_user}_{world_name}_map.{type}")):
@@ -518,7 +529,6 @@ def delete_world(world_name):
     # thus all the lines that meet the condition are not written back into the json, and are therefore deleted.
     # damn im bringing english into this now
 
-
     return redirect(url_for('home'))
 
 @app.route('/delete_char/<char_name>', methods=['GET','POST'])
@@ -551,12 +561,41 @@ def delete_map(world_name):
     os.remove(file)
     return redirect(url_for("world", world_name=world_name))
 
+@app.route('/delete_account', methods=['GET','POST'])
+def delete_account():
+    current_user = session.get('current_user')
+    cursor = DB.cursor()
+    cursor.execute("DELETE FROM Users WHERE username=?", [current_user])
+    DB.commit()
+    user_worlds = session.get('user_worlds')
+    filetypes = session.get('filetypes')
+    data = []
+    if os.path.exists(user_worlds):
+        with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        print(world)
+                        data.append(world)     
+        for world in data:
+            world_name = world['name']
+            for ext in filetypes:
+                file = os.path.join(app.config['MAPS_FOLDER'], f"{current_user}_{world_name}_map.{ext}")
+                if os.path.exists(file):
+                    os.remove(file)
+        os.remove(user_worlds)
+    session['current_user'] = None
+    flash('Account successfully deleted', 'success')
+    return redirect(url_for("welcome"))
+
+@app.route('/logout', methods=['GET','POST'])
+def logout():
+    session['current_user'] = None
+    return redirect(url_for('welcome'))
+
+@app.route('/change_details', methods=['GET','POST'])
+def change_details():
+    
+    pass
 
 if __name__ == '__main__': # runs if file is run as script, but not if its imported
     app.run(debug=True, port=5000, host="0.0.0.0")
-
-
-'''
-
-
-'''
