@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, FileField, TextAreaField
-from wtforms.validators import Length, EqualTo, InputRequired
+from wtforms.validators import Length, EqualTo, InputRequired, Optional
 from flask_wtf.file import FileAllowed, FileRequired
 
 class RegisterForm(FlaskForm):
@@ -18,7 +18,7 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Log In')
     fields = ("FloatingUsername", "FloatingPassword")
 
-class CustomSelectForm(FlaskForm):
+class CustomSelectForm(FlaskForm): # remove indeterminate stuff
     # add a name field.
     worldnamefield = StringField('world_name')
     # characters:
@@ -60,7 +60,7 @@ class CharForms(FlaskForm):
 
     HiddenCharName = StringField(render_kw={'style': 'display:none', 'value':'none'}) # for checking which character is being edited, since the name can be changed
     ChangeCharacterName = StringField('Character Name')
-    ChangeCharacterDescription = TextAreaField('Character Description', default="")
+    ChangeCharacterDescription = TextAreaField('Character Description')
     ChangeCharacterBackstory = TextAreaField('Character Backstory')
     submit_edit = SubmitField('Submit Changes')
     EditFields = ("ChangeCharacterName", "ChangeCharacterDescription", "ChangeCharacterBackstory")
@@ -75,3 +75,12 @@ class UploadForm(FlaskForm):
         FileAllowed(['jpg', 'png', 'pdf'], "Only images or PDFs allowed")
     ])
     submit = SubmitField("Upload")
+
+class AccountForm(FlaskForm):
+    Username = StringField('Username', validators=[Optional(), Length(min=2, max=20)])
+    Email = StringField('Email', validators=[Optional(), Length(min=2, max=20)])
+    CurrentPassword = PasswordField('Current Password', validators=[Optional()])
+    NewPassword = PasswordField('New Password', validators=[Optional(), Length(min=2, max=20)])
+    ConfirmNewPassword = PasswordField('Confirm New Password', validators=[Optional(), EqualTo('NewPassword'), Length(min=2, max=20)])
+    submit = SubmitField("Confirm Changes")
+    fields = ("Username", "Email", "CurrentPassword", "NewPassword", "ConfirmNewPassword")

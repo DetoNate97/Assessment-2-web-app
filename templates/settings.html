@@ -1,13 +1,56 @@
 {% extends "index.html" %}
 
 {% block content %}
-<form action="/logout" method="POST" class="m-2"><button class="btn btn-outline-secondary" type="submit">Log Out</button></form>
+<form action="/logout" method="POST" class="m-2"><button class="btn btn-outline-info" type="submit">Log Out</button></form>
 
 
 <button type="button" class="btn btn-outline-danger m-2" onclick="deleteconfirm();">Delete Account</button>
 
 <form action="/delete_account" method="POST" class="m-2"><button id="deleteconfirm" class="btn btn-outline-danger" type="submit" disabled>Confirm Delete Account</button></form>
-change details
+
+<div class="m-2">
+    <!-- 
+    <h3>Change Account details</h3>
+    <label for="">Username</label>
+    <input class="form-control form-control-lg" id="ChangeCharacterDescription" name="ChangeCharacterDescription" type="text"></textarea>
+    <label for="">Email</label>
+    <input class="form-control form-control-lg" id="ChangeCharacterDescription" name="ChangeCharacterDescription" type="text"></textarea>
+    <label for="">Current Password</label>
+    <input class="form-control form-control-lg" id="ChangeCharacterDescription" name="ChangeCharacterDescription" type="text"></textarea>
+    <label for="">New Password</label>
+    <input class="form-control form-control-lg" id="ChangeCharacterDescription" name="ChangeCharacterDescription" type="text"></textarea>
+    <label for="">Confirm New Password</label>
+    <input class="form-control form-control-lg" id="ChangeCharacterDescription" name="ChangeCharacterDescription" type="text"></textarea>
+    -->
+</div>
+
+<form method="POST" action="" novalidate>
+    {{form.hidden_tag()}}
+    <fieldset class="form-group">
+
+        {% for field in fields %}
+            <div class="form m-2 mb-3 accountform">
+                {% if form[field].errors %}
+                    <label for="{{field}}">{{form[field].label}}</label>
+                    {{form[field](class="form-control form-control-lg is-invalid")}}
+                    <div class="invalid-feedback">
+                        {% for error in form[field].errors %}
+                            <span>{{error}}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <label for="{{field}}">{{form[field].label}}</label>
+                    {{form[field](class="form-control form-control-lg", value=default[field])}}
+                {% endif %}
+            </div>
+        {% endfor %}
+
+    </fieldset>
+    <div class="form-group pb-3 was-validated m-2">
+            {{form.submit(class="btn btn-outline-info")}}
+    </div>
+</form>
+
 {% endblock content %}
 
 {% block navbar_centre %}

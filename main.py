@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, flash, session
 from flask_login import login_user, logout_user # not used, but remember to use next time i need to make a login
-from forms import RegisterForm, LoginForm, CustomSelectForm, ChangeWorldNameForm, CharForms, MapForm
+from forms import RegisterForm, LoginForm, CustomSelectForm, ChangeWorldNameForm, CharForms, MapForm, AccountForm
 import os, sqlite3, secrets, json, time
 from cryptography.fernet import Fernet
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -211,18 +211,39 @@ def home():
         return redirect(url_for('world', world_name=world_name))
     return render_template('home.html', page=page, user=current_user, form=form, fields=fields, worldnamefield=worldnamefield, CharFields=CharFields, SettFields=SettFields, GameFields=GameFields, data=data)    
 
-@app.route('/settings')
+@app.route('/settings', methods=['GET', 'POST'])
 def settings():
     '''
     Handles rendering of the settings page. slightly inspired by microsoft edge settings
 
     methods
     '''
+    form = AccountForm()
+    fields = form.fields
     page = "settings"
     current_user = session.get('current_user')
     if not current_user:
         return redirect(url_for("login"))
-    return render_template('settings.html', page=page)
+    email = (DB.execute( f"SELECT email FROM Users WHERE username = ?", [current_user] ).fetchall())[0][0]
+    default = {"Username": current_user, "Email": email}
+    if form.validate_on_submit():
+        if form.Username.data:
+            cursor = DB.cursor()
+            cursor.execute("UPDATE Users SET username=? WHERE username=?", [form.Username.data, current_user])
+            DB.commit()
+            session['current_user'] = form.Username.data
+        if form.Email.data:
+            cursor = DB.cursor()
+            cursor.execute("UPDATE Users SET email=? WHERE username=?", [form.Email.data, current_user])
+            DB.commit()
+        if form.NewPassword.data:
+            if form.CurrentPassword.data == "":
+                pass
+        current_user = session.get('current_user')
+        email = (DB.execute( f"SELECT email FROM Users WHERE username = ?", [current_user] ).fetchall())[0][0]
+        default = {"Username": current_user, "Email": email}
+        flash('updated details', 'success')
+    return render_template('settings.html', page=page, form=form, fields=fields, default=default)
 
 @app.route('/open_world/<world_name>', methods=['POST'])
 def open_world(world_name):
@@ -253,9 +274,8 @@ def open_world(world_name):
     session['world_name'] = world_name # added for delete char. probably would have been useful for other stuff earlier.
     return redirect(url_for('world', world_name=world_name))
 
-# rename these to create_new_(text). also they broken again
-@app.route('/run_function_book', methods=['POST'])
-def run_function_book():
+@app.route('/create_new_book', methods=['POST'])
+def create_new_book():
     '''
     redirects to the world. similar to the open_world function, but instead of opening the modal to select modules, they are preselected.
     creates the world in the json with pre-set modules and redirects to it.
@@ -263,62 +283,54 @@ def run_function_book():
     returns:
     a redirect to the world
     '''
-    modules = ['CharCreator', 'Historical', 'Maps', 'Locations', 'Hierarchy', 'Factions', 'Laws', 'Cultures', 'Technology', 'Languages', 'Currency'] # set the preset modules
-    # create the new world in the json file:
     user_worlds = session.get('user_worlds')
-    data = {
-        "name": "New_Book", 
-        "modules": modules
-        }
+    modules = ['CharCreator', 'Historical', 'Maps', 'Locations', 'Hierarchy', 'Factions', 'Laws', 'Cultures', 'Technology', 'Languages', 'Currency'] # set the preset modules
+    session['world_modules'] = modules
+    world_name = "New_Book"
+    data = {"name": world_name, "modules": modules}
+    data["characters"] = {}
     with open(user_worlds, "a") as file:
         file.write(json.dumps(data) + "\n")
-    # store the selected modules:
-    session['world_modules'] = modules
-    return redirect(url_for('world', world_name="New_Book"))
+    return redirect(url_for('world', world_name=world_name))
 
-@app.route('/run_function_movie', methods=['POST'])
-def run_function_movie():
+@app.route('/create_new_movie', methods=['POST'])
+def create_new_movie():
     '''
-    redirects to the world. the movie preset alternative to run_function_book.
+    redirects to the world. similar to the open_world function, but instead of opening the modal to select modules, they are preselected.
     creates the world in the json with pre-set modules and redirects to it.
 
     returns:
     a redirect to the world
     '''
-    modules = ['CharCreator', 'Historical', 'Maps', 'Locations', 'Hierarchy', 'Factions', 'Laws', 'Cultures', 'Technology', 'Languages', 'Currency'] # set the preset modules
-    # create the new world in the json file:
     user_worlds = session.get('user_worlds')
-    data = {
-        "name": "New_Movie", 
-        "modules": modules
-        }
+    modules = ['CharCreator', 'Historical', 'Maps', 'Locations', 'Hierarchy', 'Factions', 'Laws', 'Cultures', 'Technology', 'Languages', 'Currency'] # set the preset modules
+    session['world_modules'] = modules
+    world_name = "New_Movie"
+    data = {"name": world_name, "modules": modules}
+    data["characters"] = {}
     with open(user_worlds, "a") as file:
         file.write(json.dumps(data) + "\n")
-    # store the selected modules:
-    session['world_modules'] = modules
-    return redirect(url_for('world', world_name="New_Movie"))
+    return redirect(url_for('world', world_name=world_name))
 
-@app.route('/run_function_game', methods=['POST'])
-def run_function_game():
+
+@app.route('/create_new_game', methods=['POST'])
+def create_new_game():
     '''
-    redirects to the world. the videogame preset alternative to run_function_book.
+    redirects to the world. similar to the open_world function, but instead of opening the modal to select modules, they are preselected.
     creates the world in the json with pre-set modules and redirects to it.
 
     returns:
     a redirect to the world
     '''
+    user_worlds = session.get('user_worlds')
     modules = ["CharCreator", "Historical", "Maps", "Locations", "Hierarchy", "Factions", "Laws", "Cultures", "Technology", "Languages", "Currency", "Gameplay", "Magic", "Quests"] # set the preset modules
-    # create the new world in the json file:
-    user_worlds = session.get('user_worlds')
-    data = {
-        "name": "New_Game", 
-        "modules": modules
-        }
+    session['world_modules'] = modules
+    world_name = "New_Game"
+    data = {"name": world_name, "modules": modules}
+    data["characters"] = {}
     with open(user_worlds, "a") as file:
         file.write(json.dumps(data) + "\n")
-    # store the selected modules:
-    session['world_modules'] = modules
-    return redirect(url_for('world', world_name="New_Game"))
+    return redirect(url_for('world', world_name=world_name))
 
 @app.route(f'/world/<world_name>', methods=['GET', 'POST'])
 def world(world_name):
@@ -591,11 +603,6 @@ def delete_account():
 def logout():
     session['current_user'] = None
     return redirect(url_for('welcome'))
-
-@app.route('/change_details', methods=['GET','POST'])
-def change_details():
-    
-    pass
 
 if __name__ == '__main__': # runs if file is run as script, but not if its imported
     app.run(debug=True, port=5000, host="0.0.0.0")

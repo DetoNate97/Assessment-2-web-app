@@ -403,6 +403,10 @@ input[type="file"]::file-selector-button {
   margin-inline: 1%;
 }
 
+.accountform {
+  width: 300px;
+}
+
 /* for search function: https://www.youtube.com/watch?v=TlP5WIxVirU */
 .hide {
   display: none;
