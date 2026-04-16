@@ -63,14 +63,11 @@ function toggleTheme() {
     // figure out how to use localStorage for remembering user? or use cookies instead?
 }
 
-// remove indeterminate stuff
-
-
+// enables the 2nd delete account button when the first one is clicked to avoid accidentally deleting the account. probably temporary
 function deleteconfirm() {
     const btn = document.getElementById("deleteconfirm");
     btn.removeAttribute("disabled");
 }
-
 
 // 
 // search stuff

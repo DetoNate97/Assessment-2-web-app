@@ -1,11 +1,10 @@
 from flask import Flask, render_template, url_for, redirect, flash, session
-from flask_login import login_user, logout_user # not used, but remember to use next time i need to make a login
-from forms import RegisterForm, LoginForm, CustomSelectForm, ChangeWorldNameForm, CharForms, MapForm, AccountForm
+from flask_login import login_user, logout_user # not used, but remember to use next time i need to make a login system
+from forms import RegisterForm, LoginForm, CustomSelectForm, ChangeWorldNameForm, CharForms, MapForm, AccountForm, LocForms, HistForms, FacForms, LawForms, CulForms, LangForms, MagForms, QuestForms
 import os, sqlite3, secrets, json, time
 from cryptography.fernet import Fernet
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-
 
 # alternate security modules: import hashlib, zlib
 # print(hashlib.algorithms_available)
@@ -23,15 +22,6 @@ key = Fernet.generate_key()
 cipher = Fernet(key)
 KEY = key.decode()
 salt = os.urandom(16) # is this even used for anything? no, me, it isnt.
-
-
-
-def hash_password(password):
-    '''
-    currently unused function. hashes the input using werkzeug and returns it.
-    here as a reminder to use this method of hashing instead of the current method of encrypting.
-    '''
-    return generate_password_hash(password)
 
 def encrypt_message(msg):
     '''
@@ -206,6 +196,22 @@ def home():
             }
         if "CharCreator" in modules:
             data["characters"] = {}
+        if "Locations" in modules:
+            data["locations"] = {}
+        if "Historical" in modules:
+            data["history"] = {}
+        if "Factions" in modules:
+            data["factions"] = {}
+        if "Laws" in modules:
+            data["laws"] = {}
+        if "Cultures" in modules:
+            data["cultures"] = {}
+        if "Languages" in modules:
+            data["languages"] = {}
+        if "Magic" in modules:
+            data["magic"] = {}
+        if "Quests" in modules:
+            data["quests"] = {}
         with open(user_worlds, "a") as file:
             file.write(json.dumps(data) + "\n")
         return redirect(url_for('world', world_name=world_name))
@@ -224,6 +230,10 @@ def settings():
     current_user = session.get('current_user')
     if not current_user:
         return redirect(url_for("login"))
+    db_data = DB.execute( f"SELECT password, key FROM Users WHERE username = ?", [current_user] ).fetchall()
+    db_password = db_data[0][0]
+    db_key = db_data[0][1]
+    db_password = decrypt_message(db_password, db_key)
     email = (DB.execute( f"SELECT email FROM Users WHERE username = ?", [current_user] ).fetchall())[0][0]
     default = {"Username": current_user, "Email": email}
     if form.validate_on_submit():
@@ -237,8 +247,14 @@ def settings():
             cursor.execute("UPDATE Users SET email=? WHERE username=?", [form.Email.data, current_user])
             DB.commit()
         if form.NewPassword.data:
-            if form.CurrentPassword.data == "":
+            if form.CurrentPassword.data == db_password:
+                encrypted_password = encrypt_message(form.NewPassword.data)
+                cursor = DB.cursor()
+                cursor.execute("UPDATE Users SET password=?,key=? WHERE username=?", [encrypted_password, KEY, current_user])
+                DB.commit()
                 pass
+            else:
+                flash("password does not match current password", "danger")
         current_user = session.get('current_user')
         email = (DB.execute( f"SELECT email FROM Users WHERE username = ?", [current_user] ).fetchall())[0][0]
         default = {"Username": current_user, "Email": email}
@@ -265,7 +281,7 @@ def open_world(world_name):
             for line in file:
                 data.append(json.loads(line))
     except:
-        print("no db? :megamind:") # can just delete this
+        pass
     for i in data:
         if i["name"] == world_name:
             modules = i["modules"]
@@ -350,10 +366,40 @@ def world(world_name):
     data = []
     form = ChangeWorldNameForm()
     Charforms = CharForms()
+    Locforms = LocForms()
+    Histforms = HistForms()
+    Facforms = FacForms()
+    Lawforms = LawForms()
+    Culforms = CulForms()
+    Langforms = LangForms()
+    Magforms = MagForms()
+    Questforms = QuestForms()
     Mapform = MapForm()
     charfields = Charforms.CharFields
-    editfields = Charforms.EditFields
+    chareditfields = Charforms.EditFields
+    locfields = Locforms.LocFields
+    loceditfields = Locforms.EditFields
+    histfields = Histforms.HistFields
+    histeditfields = Histforms.EditFields
+    facfields = Facforms.FacFields
+    faceditfields = Facforms.EditFields
+    lawfields = Lawforms.LawFields
+    laweditfields = Lawforms.EditFields
+    culfields = Culforms.CulFields
+    culeditfields = Culforms.EditFields
+    langfields = Langforms.LangFields
+    langeditfields = Langforms.EditFields
+    magfields = Magforms.MagFields
+    mageditfields = Magforms.EditFields
+    questfields = Questforms.QuestFields
+    questeditfields = Questforms.EditFields
 
+
+    
+
+
+
+    
     # checks the filetype of the currently saved map
     ext = ""
     filetypes = ['jpg', 'png', 'webp', 'jpeg', 'jfif', 'avif', 'gif'] # valid filetypes for map uploads. i should just make this a const like DB
@@ -377,7 +423,104 @@ def world(world_name):
             if i["name"] == world_name:
                 characters = i["characters"]
         data = []
+    
 
+    questoptions = ["",]
+    for char in characters:
+        questoptions.append(char)
+    Questforms.CreateQuestStart.choices = [(o, o) for o in questoptions]
+    Questforms.CreateQuestFinish.choices = [(o, o) for o in questoptions]
+    Questforms.ChangeQuestStart.choices = [(o, o) for o in questoptions]
+    Questforms.ChangeQuestFinish.choices = [(o, o) for o in questoptions]
+
+    locations = []
+    if "Locations" in modules:
+        with open(user_worlds, "r") as file:
+            for line in file:
+                world = json.loads(line)
+                data.append(world)
+        for i in data:
+            if i["name"] == world_name:
+                locations = i["locations"]
+        data = []
+
+    events = []
+    if "Historical" in modules:
+        with open(user_worlds, "r") as file:
+            for line in file:
+                world = json.loads(line)
+                data.append(world)
+        for i in data:
+            if i["name"] == world_name:
+                events = i["history"]
+        data = []
+
+    factions = []
+    if "Factions" in modules:
+        with open(user_worlds, "r") as file:
+            for line in file:
+                world = json.loads(line)
+                data.append(world)
+        for i in data:
+            if i["name"] == world_name:
+                factions = i["factions"]
+        data = []
+
+    laws = []
+    if "Laws" in modules:
+        with open(user_worlds, "r") as file:
+            for line in file:
+                world = json.loads(line)
+                data.append(world)
+        for i in data:
+            if i["name"] == world_name:
+                laws = i["laws"]
+        data = []
+
+    cultures = []
+    if "Cultures" in modules:
+        with open(user_worlds, "r") as file:
+            for line in file:
+                world = json.loads(line)
+                data.append(world)
+        for i in data:
+            if i["name"] == world_name:
+                cultures = i["cultures"]
+        data = []
+    
+    languages = []
+    if "Languages" in modules:
+        with open(user_worlds, "r") as file:
+            for line in file:
+                world = json.loads(line)
+                data.append(world)
+        for i in data:
+            if i["name"] == world_name:
+                languages = i["languages"]
+        data = []
+
+    spells = []
+    if "Magic" in modules:
+        with open(user_worlds, "r") as file:
+            for line in file:
+                world = json.loads(line)
+                data.append(world)
+        for i in data:
+            if i["name"] == world_name:
+                spells = i["magic"]
+        data = []
+
+    quests = []
+    if "Quests" in modules:
+        with open(user_worlds, "r") as file:
+            for line in file:
+                world = json.loads(line)
+                data.append(world)
+        for i in data:
+            if i["name"] == world_name:
+                quests = i["quests"]
+        data = []
+    
     # if the form is submitted, check which fields have been filled
     if form.validate_on_submit():
         # this section is really long so i added big gaps
@@ -393,13 +536,72 @@ def world(world_name):
         editchardesc = Charforms.ChangeCharacterDescription.data
         editcharback = Charforms.ChangeCharacterBackstory.data
 
+        locname = Locforms.CreateLocationName.data
+        locdesc = Locforms.CreateLocationDescription.data
+        locback = Locforms.CreateLocationBackstory.data
+        editlocname = Locforms.ChangeLocationName.data
+        editlocdesc = Locforms.ChangeLocationDescription.data
+        editlocback = Locforms.ChangeLocationBackstory.data
+
+        eventname = Histforms.CreateEventName.data
+        eventdesc = Histforms.CreateEventDescription.data
+        eventback = Histforms.CreateEventBackstory.data
+        editeventname = Histforms.ChangeEventName.data
+        editeventdesc = Histforms.ChangeEventDescription.data
+        editeventback = Histforms.ChangeEventBackstory.data
+
+        facname = Facforms.CreateFactionName.data
+        facdesc = Facforms.CreateFactionDescription.data
+        facback = Facforms.CreateFactionBackstory.data
+        editfacname = Facforms.ChangeFactionName.data
+        editfacdesc = Facforms.ChangeFactionDescription.data
+        editfacback = Facforms.ChangeFactionBackstory.data
+
+        lawname = Lawforms.CreateLawName.data
+        lawdesc = Lawforms.CreateLawDescription.data
+        lawback = Lawforms.CreateLawBackstory.data
+        editlawname = Lawforms.ChangeLawName.data
+        editlawdesc = Lawforms.ChangeLawDescription.data
+        editlawback = Lawforms.ChangeLawBackstory.data
+        
+        culname = Culforms.CreateCultureName.data
+        culdesc = Culforms.CreateCultureDescription.data
+        culback = Culforms.CreateCultureBackstory.data
+        editculname = Culforms.ChangeCultureName.data
+        editculdesc = Culforms.ChangeCultureDescription.data
+        editculback = Culforms.ChangeCultureBackstory.data
+
+        langname = Langforms.CreateLanguageName.data
+        langdesc = Langforms.CreateLanguageDescription.data
+        langback = Langforms.CreateLanguageBackstory.data
+        editlangname = Langforms.ChangeLanguageName.data
+        editlangdesc = Langforms.ChangeLanguageDescription.data
+        editlangback = Langforms.ChangeLanguageBackstory.data
+
+        spellname = Magforms.CreateSpellName.data
+        spelldesc = Magforms.CreateSpellDescription.data
+        spellcost = Magforms.CreateSpellCost.data
+        spelldmg = Magforms.CreateSpellDamage.data
+        editspellname = Magforms.ChangeSpellName.data
+        editspelldesc = Magforms.ChangeSpellDescription.data
+        editspellcost = Magforms.ChangeSpellCost.data
+        editspelldmg = Magforms.ChangeSpellDamage.data
+
+        questname = Questforms.CreateQuestName.data
+        questtask = Questforms.CreateQuestTask.data
+        queststart = Questforms.CreateQuestStart.data
+        questfinish = Questforms.CreateQuestFinish.data
+        questreward = Questforms.CreateQuestReward.data
+        editquestname = Questforms.ChangeQuestName.data
+        editquesttask = Questforms.ChangeQuestTask.data
+        editqueststart = Questforms.ChangeQuestStart.data
+        editquestfinish = Questforms.ChangeQuestFinish.data
+        editquestreward = Questforms.ChangeQuestReward.data
+        
         #
         # check if the world name field was filled
         #
         if form.worldnamefield.data:
-
-
-
 
             with open(user_worlds, "r") as file:
                 for line in file:
@@ -428,13 +630,10 @@ def world(world_name):
                 os.rename(file, os.path.join(app.config['MAPS_FOLDER'], f"{current_user}_{form.worldnamefield.data}_map.{ext}"))
 
             return redirect(url_for("world", world_name=form.worldnamefield.data))
-        
-        #
-        # check if any of the character creation fields were filled
-        #
 
         if charname or chardesc or charback:
             if charname and chardesc and charback:
+                data = []
                 with open(user_worlds, "r") as file:
                     for line in file:
                         world = json.loads(line)
@@ -447,14 +646,12 @@ def world(world_name):
                         file.write(json.dumps(obj) + "\n")
                 return redirect(url_for("world", world_name=world_name))
             else:
-                flash('please fill all fields', 'danger')
+                flash('make sure all fields are filled', 'danger')
+                return redirect(url_for("world", world_name=world_name))
 
-        #
-        # check if any of the edit fields were filled
-        #
-        print(editcharname, editchardesc, editcharback)
         if editcharname or editchardesc or editcharback:
             if editcharname and editchardesc and editcharback:
+                data = []
                 with open(user_worlds, "r") as file:
                     for line in file:
                         world = json.loads(line)
@@ -470,9 +667,312 @@ def world(world_name):
                 return redirect(url_for("world", world_name=world_name))
             else:
                 flash('make sure all fields are filled', 'danger')
-                return redirect(url_for("world", world_name=world_name))       
+                return redirect(url_for("world", world_name=world_name))
+            
+        if locname or locdesc or locback:
+            if locname and locdesc and locback:
+                data = []
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        data.append(world)
+                for i in data:
+                    if i["name"] == world_name:
+                        i["locations"][locname] = [locdesc, locback]
+                with open(user_worlds, 'w') as file:
+                    for obj in data:
+                        file.write(json.dumps(obj) + "\n")
+                return redirect(url_for("world", world_name=world_name))
+            else:
+                flash('make sure all fields are filled', 'danger')
+                return redirect(url_for("world", world_name=world_name))
+            
+        if editlocname or editlocdesc or editlocback:
+            if editlocname and editlocdesc and editlocback:
+                data = []
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        data.append(world)
+                for i in data:
+                    if i["name"] == world_name:
+                        for loc in i['locations']:
+                            if loc == Locforms.HiddenLocName.data:
+                                i['locations'][loc] = [editlocdesc, editlocback]
+                with open(user_worlds, 'w') as file:
+                    for obj in data:
+                        file.write(json.dumps(obj) + "\n")
+                return redirect(url_for("world", world_name=world_name))
+            else:
+                flash('make sure all fields are filled', 'danger')
+                return redirect(url_for("world", world_name=world_name))
+            
+        if eventname or eventdesc or eventback:
+            if eventname and eventdesc and eventback:
+                data = []
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        data.append(world)
+                for i in data:
+                    if i["name"] == world_name:
+                        i["history"][eventname] = [eventdesc, eventback]
+                with open(user_worlds, 'w') as file:
+                    for obj in data:
+                        file.write(json.dumps(obj) + "\n")
+                return redirect(url_for("world", world_name=world_name))
+            else:
+                flash('make sure all fields are filled', 'danger')
+                return redirect(url_for("world", world_name=world_name))
+            
+        if editeventname or editeventdesc or editeventback:
+            if editeventname and editeventdesc and editeventback:
+                data = []
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        data.append(world)
+                for i in data:
+                    if i["name"] == world_name:
+                        for event in i['history']:
+                            if event == Histforms.HiddenEventName.data:
+                                i['history'][event] = [editeventdesc, editeventback]
+                with open(user_worlds, 'w') as file:
+                    for obj in data:
+                        file.write(json.dumps(obj) + "\n")
+                return redirect(url_for("world", world_name=world_name))
+            else:
+                flash('make sure all fields are filled', 'danger')
+                return redirect(url_for("world", world_name=world_name))
+            
+        if facname or facdesc or facback:
+            if facname and facdesc and facback:
+                data = []
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        data.append(world)
+                for i in data:
+                    if i["name"] == world_name:
+                        i["factions"][facname] = [facdesc, facback]
+                with open(user_worlds, 'w') as file:
+                    for obj in data:
+                        file.write(json.dumps(obj) + "\n")
+                return redirect(url_for("world", world_name=world_name))
+            else:
+                flash('make sure all fields are filled', 'danger')
+                return redirect(url_for("world", world_name=world_name))
+            
+        if editfacname or editfacdesc or editfacback:
+            if editfacname and editfacdesc and editfacback:
+                data = []
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        data.append(world)
+                for i in data:
+                    if i["name"] == world_name:
+                        for fac in i['factions']:
+                            if fac == Facforms.HiddenFacName.data:
+                                i['factions'][fac] = [editfacdesc, editfacback]
+                with open(user_worlds, 'w') as file:
+                    for obj in data:
+                        file.write(json.dumps(obj) + "\n")
+                return redirect(url_for("world", world_name=world_name))
+            else:
+                flash('make sure all fields are filled', 'danger')
+                return redirect(url_for("world", world_name=world_name))
         
-
+        if lawname or lawdesc or lawback:
+            if lawname and lawdesc and lawback:
+                data = []
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        data.append(world)
+                for i in data:
+                    if i["name"] == world_name:
+                        i["laws"][lawname] = [lawdesc, lawback]
+                with open(user_worlds, 'w') as file:
+                    for obj in data:
+                        file.write(json.dumps(obj) + "\n")
+                return redirect(url_for("world", world_name=world_name))
+            else:
+                flash('make sure all fields are filled', 'danger')
+                return redirect(url_for("world", world_name=world_name))
+            
+        if editlawname or editlawdesc or editlawback:
+            if editlawname and editlawdesc and editlawback:
+                data = []
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        data.append(world)
+                for i in data:
+                    if i["name"] == world_name:
+                        for law in i['laws']:
+                            if law == Lawforms.HiddenLawName.data:
+                                i['laws'][law] = [editlawdesc, editlawback]
+                with open(user_worlds, 'w') as file:
+                    for obj in data:
+                        file.write(json.dumps(obj) + "\n")
+                return redirect(url_for("world", world_name=world_name))
+            else:
+                flash('make sure all fields are filled', 'danger')
+                return redirect(url_for("world", world_name=world_name))
+            
+        if culname or culdesc or culback:
+            if culname and culdesc and culback:
+                data = []
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        data.append(world)
+                for i in data:
+                    if i["name"] == world_name:
+                        i["cultures"][culname] = [culdesc, culback]
+                with open(user_worlds, 'w') as file:
+                    for obj in data:
+                        file.write(json.dumps(obj) + "\n")
+                return redirect(url_for("world", world_name=world_name))
+            else:
+                flash('make sure all fields are filled', 'danger')
+                return redirect(url_for("world", world_name=world_name))
+            
+        if editculname or editculdesc or editculback:
+            if editculname and editculdesc and editculback:
+                data = []
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        data.append(world)
+                for i in data:
+                    if i["name"] == world_name:
+                        for cul in i['cultures']:
+                            if cul == Culforms.HiddenCulName.data:
+                                i['cultures'][cul] = [editculdesc, editculback]
+                with open(user_worlds, 'w') as file:
+                    for obj in data:
+                        file.write(json.dumps(obj) + "\n")
+                return redirect(url_for("world", world_name=world_name))
+            else:
+                flash('make sure all fields are filled', 'danger')
+                return redirect(url_for("world", world_name=world_name))
+            
+        if langname or langdesc or langback:
+            if langname and langdesc and langback:
+                data = []
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        data.append(world)
+                for i in data:
+                    if i["name"] == world_name:
+                        i["languages"][langname] = [langdesc, langback]
+                with open(user_worlds, 'w') as file:
+                    for obj in data:
+                        file.write(json.dumps(obj) + "\n")
+                return redirect(url_for("world", world_name=world_name))
+            else:
+                flash('make sure all fields are filled', 'danger')
+                return redirect(url_for("world", world_name=world_name))
+            
+        if editlangname or editlangdesc or editlangback:
+            if editlangname and editlangdesc and editlangback:
+                data = []
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        data.append(world)
+                for i in data:
+                    if i["name"] == world_name:
+                        for lang in i['languages']:
+                            if lang == Langforms.HiddenLangName.data:
+                                i['languages'][lang] = [editlangdesc, editlangback]
+                with open(user_worlds, 'w') as file:
+                    for obj in data:
+                        file.write(json.dumps(obj) + "\n")
+                return redirect(url_for("world", world_name=world_name))
+            else:
+                flash('make sure all fields are filled', 'danger')
+                return redirect(url_for("world", world_name=world_name))
+            
+        if spellname or spelldesc or spellcost or spelldmg:
+            if spellname and spelldesc and spellcost and spelldmg:
+                data = []
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        data.append(world)
+                for i in data:
+                    if i["name"] == world_name:
+                        i["magic"][spellname] = [spelldesc, spellcost, spelldmg]
+                with open(user_worlds, 'w') as file:
+                    for obj in data:
+                        file.write(json.dumps(obj) + "\n")
+                return redirect(url_for("world", world_name=world_name))
+            else:
+                flash('make sure all fields are filled', 'danger')
+                return redirect(url_for("world", world_name=world_name))
+            
+        if editspellname or editspelldesc or editspellcost or editspelldmg:
+            if editspellname and editspelldesc and editspellcost and editspelldmg:
+                data = []
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        data.append(world)
+                for i in data:
+                    if i["name"] == world_name:
+                        for spell in i['magic']:
+                            if spell == Magforms.HiddenSpellName.data:
+                                i['magic'][spell] = [editspelldesc, editspellcost, editspelldmg]
+                with open(user_worlds, 'w') as file:
+                    for obj in data:
+                        file.write(json.dumps(obj) + "\n")
+                return redirect(url_for("world", world_name=world_name))
+            else:
+                flash('make sure all fields are filled', 'danger')
+                return redirect(url_for("world", world_name=world_name))
+            
+        if questname or questtask or queststart or questfinish or questreward:
+            if questname and questtask and queststart and questfinish and questreward:
+                data = []
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        data.append(world)
+                for i in data:
+                    if i["name"] == world_name:
+                        i["quests"][questname] = [questtask, queststart, questfinish, questreward]
+                with open(user_worlds, 'w') as file:
+                    for obj in data:
+                        file.write(json.dumps(obj) + "\n")
+                return redirect(url_for("world", world_name=world_name))
+            else:
+                flash('make sure all fields are filled', 'danger')
+                return redirect(url_for("world", world_name=world_name))
+            
+        if editquestname or editquesttask or editqueststart or editquestfinish or editquestreward:
+            if editquestname and editquesttask and editqueststart and editquestfinish and editquestreward:
+                data = []
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        data.append(world)
+                for i in data:
+                    if i["name"] == world_name:
+                        for quest in i['quests']:
+                            if quest == Questforms.HiddenQuestName.data:
+                                i['quests'][quest] = [editquesttask, editqueststart, editquestfinish, editquestreward]
+                with open(user_worlds, 'w') as file:
+                    for obj in data:
+                        file.write(json.dumps(obj) + "\n")
+                return redirect(url_for("world", world_name=world_name))
+            else:
+                flash('make sure all fields are filled', 'danger')
+                return redirect(url_for("world", world_name=world_name))
+            
         if Mapform.Map.data:
             filetypes = session.get('filetypes')
             current = []
@@ -505,8 +1005,8 @@ def world(world_name):
         # FIGURED IT OUT: EACH SUBMIT ONLY SUBMITS ITS OWN FIELDS, SO ALL THE OTHERS ARE EMPTY EVEN IF THEY HAVE DATA
         # anyway make sure every combination of filled and unfilled fields has an outcome that doesnt crash
 
-    # maybe i should add all the jinja variables to a list or smth so that it doesnt go all the way out there -->                                                                                                                                  here
-    return render_template(f'world.html', world_name=world_name, current_user=current_user, modules=modules, form=form, Charforms=Charforms, Mapform=Mapform, charfields=charfields, editfields=editfields, characters=characters, editdata="", ext=ext)
+    # maybe i should add all the jinja variables to a list or smth so that it doesnt go all the way out there -->                                                                                                                                                                                                                                 
+    return render_template(f'world.html', world_name=world_name, current_user=current_user, modules=modules, form=form, Charforms=Charforms, Locforms=Locforms, Histforms=Histforms, Facforms=Facforms, Lawforms=Lawforms, Culforms=Culforms, Langforms=Langforms, Magforms=Magforms, Questforms=Questforms, Mapform=Mapform, charfields=charfields, chareditfields=chareditfields, characters=characters, locfields=locfields, loceditfields=loceditfields, locations=locations, histfields=histfields, histeditfields=histeditfields, events=events, facfields=facfields, faceditfields=faceditfields, factions=factions, lawfields=lawfields, laweditfields=laweditfields, laws=laws, culfields=culfields, culeditfields=culeditfields, cultures=cultures, langfields=langfields, langeditfields=langeditfields, languages=languages, magfields=magfields, mageditfields=mageditfields, spells=spells, questfields=questfields, questeditfields=questeditfields, quests=quests, ext=ext)
 
 @app.route('/delete_world/<world_name>', methods=['POST'])
 def delete_world(world_name):
@@ -550,15 +1050,191 @@ def delete_char(char_name):
     data = []
     kept_chars = {}
     with open(user_worlds, "r") as file:
-                for line in file:
-                    world = json.loads(line)
-                    data.append(world)
+        for line in file:
+            world = json.loads(line)
+            data.append(world)
     for world in data:
         if world['name'] == world_name:
             for character in world['characters']:
                 if character != char_name:
                     kept_chars[character] = world['characters'][character]
             world['characters'] = kept_chars
+    if data:
+        with open(user_worlds, 'w') as file:
+            for obj in data:
+                file.write(json.dumps(obj) + "\n")
+    return redirect(url_for("world", world_name=world_name))
+
+@app.route('/delete_loc/<loc_name>', methods=['GET', 'POST'])
+def delete_loc(loc_name):
+    user_worlds = session.get('user_worlds')
+    world_name = session.get('world_name')
+    data = []
+    kept_locs = {}
+    with open(user_worlds, "r") as file:
+        for line in file:
+            world = json.loads(line)
+            data.append(world)
+    for world in data:
+        if world['name'] == world_name:
+            for location in world['locations']:
+                if location != loc_name:
+                    kept_locs[location] = world['locations'][location]
+            world['locations'] = kept_locs
+    if data:
+        with open(user_worlds, 'w') as file:
+            for obj in data:
+                file.write(json.dumps(obj) + "\n")
+    return redirect(url_for("world", world_name=world_name))
+
+@app.route('/delete_event/<event_name>', methods=['GET', 'POST'])
+def delete_event(event_name):
+    user_worlds = session.get('user_worlds')
+    world_name = session.get('world_name')
+    data = []
+    kept_events = {}
+    with open(user_worlds, "r") as file:
+        for line in file:
+            world = json.loads(line)
+            data.append(world)
+    for world in data:
+        if world['name'] == world_name:
+            for event in world['history']:
+                if event != event_name:
+                    kept_events[event] = world['history'][event]
+            world['history'] = kept_events
+    if data:
+        with open(user_worlds, 'w') as file:
+            for obj in data:
+                file.write(json.dumps(obj) + "\n")
+    return redirect(url_for("world", world_name=world_name))
+
+@app.route('/delete_fac/<fac_name>', methods=['GET', 'POST'])
+def delete_fac(fac_name):
+    user_worlds = session.get('user_worlds')
+    world_name = session.get('world_name')
+    data = []
+    kept_facs = {}
+    with open(user_worlds, "r") as file:
+        for line in file:
+            world = json.loads(line)
+            data.append(world)
+    for world in data:
+        if world['name'] == world_name:
+            for faction in world['factions']:
+                if faction != fac_name:
+                    kept_facs[faction] = world['factions'][faction]
+            world['factions'] = kept_facs
+    if data:
+        with open(user_worlds, 'w') as file:
+            for obj in data:
+                file.write(json.dumps(obj) + "\n")
+    return redirect(url_for("world", world_name=world_name))
+
+@app.route('/delete_law/<law_name>', methods=['GET', 'POST'])
+def delete_law(law_name):
+    user_worlds = session.get('user_worlds')
+    world_name = session.get('world_name')
+    data = []
+    kept_laws = {}
+    with open(user_worlds, "r") as file:
+        for line in file:
+            world = json.loads(line)
+            data.append(world)
+    for world in data:
+        if world['name'] == world_name:
+            for law in world['laws']:
+                if law != law_name:
+                    kept_laws[law] = world['laws'][law]
+            world['laws'] = kept_laws
+    if data:
+        with open(user_worlds, 'w') as file:
+            for obj in data:
+                file.write(json.dumps(obj) + "\n")
+    return redirect(url_for("world", world_name=world_name))
+
+@app.route('/delete_cul/<cul_name>', methods=['GET', 'POST'])
+def delete_cul(cul_name):
+    user_worlds = session.get('user_worlds')
+    world_name = session.get('world_name')
+    data = []
+    kept_culs = {}
+    with open(user_worlds, "r") as file:
+        for line in file:
+            world = json.loads(line)
+            data.append(world)
+    for world in data:
+        if world['name'] == world_name:
+            for cul in world['cultures']:
+                if cul != cul_name:
+                    kept_culs[cul] = world['cultures'][cul]
+            world['cultures'] = kept_culs
+    if data:
+        with open(user_worlds, 'w') as file:
+            for obj in data:
+                file.write(json.dumps(obj) + "\n")
+    return redirect(url_for("world", world_name=world_name))
+
+@app.route('/delete_lang/<lang_name>', methods=['GET', 'POST'])
+def delete_lang(lang_name):
+    user_worlds = session.get('user_worlds')
+    world_name = session.get('world_name')
+    data = []
+    kept_langs = {}
+    with open(user_worlds, "r") as file:
+        for line in file:
+            world = json.loads(line)
+            data.append(world)
+    for world in data:
+        if world['name'] == world_name:
+            for lang in world['languages']:
+                if lang != lang_name:
+                    kept_langs[lang] = world['languages'][lang]
+            world['languages'] = kept_langs
+    if data:
+        with open(user_worlds, 'w') as file:
+            for obj in data:
+                file.write(json.dumps(obj) + "\n")
+    return redirect(url_for("world", world_name=world_name))
+
+@app.route('/delete_spell/<spell_name>', methods=['GET', 'POST'])
+def delete_spell(spell_name):
+    user_worlds = session.get('user_worlds')
+    world_name = session.get('world_name')
+    data = []
+    kept_spells = {}
+    with open(user_worlds, "r") as file:
+        for line in file:
+            world = json.loads(line)
+            data.append(world)
+    for world in data:
+        if world['name'] == world_name:
+            for spell in world['magic']:
+                if spell != spell_name:
+                    kept_spells[spell] = world['magic'][spell]
+            world['magic'] = kept_spells
+    if data:
+        with open(user_worlds, 'w') as file:
+            for obj in data:
+                file.write(json.dumps(obj) + "\n")
+    return redirect(url_for("world", world_name=world_name))
+
+@app.route('/delete_quest/<quest_name>', methods=['GET', 'POST'])
+def delete_quest(quest_name):
+    user_worlds = session.get('user_worlds')
+    world_name = session.get('world_name')
+    data = []
+    kept_quests = {}
+    with open(user_worlds, "r") as file:
+        for line in file:
+            world = json.loads(line)
+            data.append(world)
+    for world in data:
+        if world['name'] == world_name:
+            for quest in world['quests']:
+                if quest != quest_name:
+                    kept_quests[quest] = world['quests'][quest]
+            world['quests'] = kept_quests
     if data:
         with open(user_worlds, 'w') as file:
             for obj in data:
@@ -586,7 +1262,6 @@ def delete_account():
         with open(user_worlds, "r") as file:
                     for line in file:
                         world = json.loads(line)
-                        print(world)
                         data.append(world)     
         for world in data:
             world_name = world['name']

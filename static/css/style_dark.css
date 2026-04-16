@@ -263,6 +263,36 @@ input[type="file"]::file-selector-button {
   padding: 0;
 }
 
+.card-LangCreator {
+  width: 250px;
+  height: fit-content;
+  text-align: start;
+  justify-content: start;
+  display:block;
+  padding: 0;
+}
+
+.card-MagCreator {
+  width: fit-content;
+  min-width: 240px;
+  height: fit-content;
+  text-align: start;
+  justify-content: start;
+  display:block;
+  padding: 0;
+}
+
+.module-table {
+  margin: 0.5rem;
+}
+
+.module-table-cell {
+  border: 1px solid #ffffff;
+  max-width: 110px;
+  min-width: 110px;
+  padding: 0.25rem;
+}
+
 .offcanvas {
   max-width: 230px;
   background: #393939;
@@ -406,6 +436,25 @@ input[type="file"]::file-selector-button {
 .accountform {
   width: 300px;
 }
+
+.form-select {
+  background-color: #393939;
+  border-radius: 8px;
+  color: #ffffff;
+}
+
+.form-select:focus {
+  background-color: #393939;
+  border-radius: 8px;
+  color: #ffffff;
+}
+
+.form-select:hover {
+  background-color: #393939;
+  border-radius: 8px;
+  color: #ffffff;
+}
+
 
 /* for search function: https://www.youtube.com/watch?v=TlP5WIxVirU */
 .hide {

@@ -7,9 +7,7 @@
     <label for="search">Search Content</label>
     <input type="search" id="search" content-search>
 
-    
-
-    <div searches>
+    <div searches class="hide">
         available searches:
         <p>map</p>
         <p>char</p>
@@ -18,6 +16,209 @@
     
     
     <div class="row">
+
+        {% if "CharCreator" in modules %}
+            <!-- card -->
+            <div class="card card-CharCreator m-1 p-1" id="char">
+                <div class="row m-1 justify-content-center">
+                    <h3 class="col-8 ms-2 ps-0">Characters</h3>
+                    <a class="btn btn-outline-info btn-newchar col-8 me-3" data-bs-toggle="offcanvas" href="#charoffcanvas" role="button" aria-controls="offcanvas">+</a>
+                </div>
+                <div class="mb-4">
+                    {% if characters %}
+                        {% for char in characters %}
+                            <p class="mb-0 mt-3">{{char}} --- 
+                            <a href="/delete_char/{{char}}" class="link link-bold">delete</a> / 
+                            
+                            <a data-bs-toggle="offcanvas" data-bs-target="#charoffcanvas{{ char|replace(' ', '_') }}" href="#charoffcanvas{{ char|replace(' ', '_') }}" role="button" aria-controls="offcanvas{{ char|replace(' ', '_') }}" class="link link-bold">edit</a>
+
+                            </p>
+                            <span class="m-0">
+                                {% for i in characters[char] %}
+                                    {{i}}.
+                                {% endfor %}
+                            </p>
+                        {% endfor %}
+                    {% else %}
+                        <p> no characters </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- creation offcanvas -->
+            <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="charoffcanvas" aria-labelledby="charoffcanvasLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="charoffcanvasLabel">Create New Character</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <form method="POST" action="" novalidate>
+                        {{form.hidden_tag()}}
+                        <div class="modal-body">
+                            <fieldset class="">
+                                {% for field in charfields %}
+                                    <div class="form">
+                                        <h6>{{Charforms[field].label}}</h6>
+                                        {% if Charforms[field].errors %}
+                                            {{Charforms[field](class="form-control form-control-lg is-invalid")}}
+                                            <div class="invalid-feedback">
+                                                {% for error in errors %}
+                                                    <span>{{error}}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{Charforms[field](class="form-control form-control-lg")}}
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </fieldset>
+                        </div>
+                        <div class="modal-footer mt-3">
+                            {{Charforms.submit_create(class="btn btn-outline-info")}}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% for char in characters %}
+                <!-- editing offcanvas for {{char}} -->
+                <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="charoffcanvas{{ char|replace(' ', '_') }}" aria-labelledby="charoffcanvas{{ char|replace(' ', '_') }}Label">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="charoffcanvas{{ char|replace(' ', '_') }}Label">Edit Character</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <form method="POST" action="" novalidate>
+                            {{form.hidden_tag()}}
+                            {{Charforms.HiddenCharName(value=char)}}
+                            <div class="modal-body">
+                                <fieldset class="">
+                                    {% for field in chareditfields %}
+                                        <div class="form">
+                                            <h6>{{Charforms[field].label}}</h6>
+                                            {% if field == "ChangeCharacterName" %}
+                                                {{Charforms[field](class="form-control form-control-lg", value=char )}}
+                                            {% elif field == "ChangeCharacterDescription" %}
+                                                <!-- {{Charforms[field](class="form-control form-control-lg", default=characters[char][0] )}} --> <!-- sadly textareas dont allow changing the value in the html when using flask forms -->
+                                                <textarea class="form-control form-control-lg" id="ChangeCharacterDescription" name="ChangeCharacterDescription">{{characters[char][0]}}</textarea>
+                                            {% elif field == "ChangeCharacterBackstory" %}
+                                                <!-- {{Charforms[field](class="form-control form-control-lg", value=characters[char][1] )}} -->
+                                                <textarea class="form-control form-control-lg" id="ChangeCharacterBackstory" name="ChangeCharacterBackstory">{{characters[char][1]}}</textarea>
+                                            {% endif %}
+                                            <!-- characters[char] -->
+                                        </div>
+                                    {% endfor %}
+                                </fieldset>
+                            </div>
+                            <div class="modal-footer mt-3">
+                                {{Charforms.submit_edit(class="btn btn-outline-info")}}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if "Historical" in modules %}
+            <!-- card -->
+            <div class="card card-CharCreator m-1 p-1" id="hist">
+                <div class="row m-1 justify-content-center">
+                    <h3 class="col-8 ms-2 ps-0">History</h3>
+                    <a class="btn btn-outline-info btn-newchar col-8 me-3" data-bs-toggle="offcanvas" href="#histoffcanvas" role="button" aria-controls="offcanvas">+</a>
+                </div>
+                <div class="mb-4">
+                    {% if events %}
+                        {% for event in events %}
+                            <p class="mb-0 mt-3">{{event}} --- 
+                            <a href="/delete_event/{{event}}" class="link link-bold">delete</a> / 
+                            
+                            <a data-bs-toggle="offcanvas" data-bs-target="#histoffcanvas{{ event|replace(' ', '_') }}" href="#histoffcanvas{{ event|replace(' ', '_') }}" role="button" aria-controls="histoffcanvas{{ event|replace(' ', '_') }}" class="link link-bold">edit</a>
+
+                            </p>
+                            <span class="m-0">
+                                {% for i in events[event] %}
+                                    {{i}}.
+                                {% endfor %}
+                            </p>
+                        {% endfor %}
+                    {% else %}
+                        <p> no historical events </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- creation offcanvas -->
+            <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="histoffcanvas" aria-labelledby="histoffcanvasLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="histoffcanvasLabel">Create New Historical Event</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <form method="POST" action="" novalidate>
+                        {{form.hidden_tag()}}
+                        <div class="modal-body">
+                            <fieldset class="">
+                                {% for field in histfields %}
+                                    <div class="form">
+                                        <h6>{{Histforms[field].label}}</h6>
+                                        {% if Histforms[field].errors %}
+                                            {{Histforms[field](class="form-control form-control-lg is-invalid")}}
+                                            <div class="invalid-feedback">
+                                                {% for error in errors %}
+                                                    <span>{{error}}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{Histforms[field](class="form-control form-control-lg")}}
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </fieldset>
+                        </div>
+                        <div class="modal-footer mt-3">
+                            {{Histforms.submit_create(class="btn btn-outline-info")}}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% for event in events %}
+                <!-- editing offcanvas for {{event}} -->
+                <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="histoffcanvas{{ event|replace(' ', '_') }}" aria-labelledby="histoffcanvas{{ event|replace(' ', '_') }}Label">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="histoffcanvas{{ event|replace(' ', '_') }}Label">Edit Event</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <form method="POST" action="" novalidate>
+                            {{form.hidden_tag()}}
+                            {{Histforms.HiddenEventName(value=event)}}
+                            <div class="modal-body">
+                                <fieldset class="">
+                                    {% for field in histeditfields %}
+                                        <div class="form">
+                                            <h6>{{Histforms[field].label}}</h6>
+                                            {% if field == "ChangeEventName" %}
+                                                {{Histforms[field](class="form-control form-control-lg", value=event )}}
+                                            {% elif field == "ChangeEventDescription" %}
+                                                <!-- {{Histforms[field](class="form-control form-control-lg", default=events[event][0] )}} --> <!-- sadly textareas dont allow changing the value in the html when using flask forms -->
+                                                <textarea class="form-control form-control-lg" id="ChangeEventDescription" name="ChangeEventDescription">{{events[event][0]}}</textarea>
+                                            {% elif field == "ChangeEventBackstory" %}
+                                                <!-- {{Histforms[field](class="form-control form-control-lg", value=events[event][1] )}} -->
+                                                <textarea class="form-control form-control-lg" id="ChangeEventBackstory" name="ChangeEventBackstory">{{events[event][1]}}</textarea>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </fieldset>
+                            </div>
+                            <div class="modal-footer mt-3">
+                                {{Histforms.submit_edit(class="btn btn-outline-info")}}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
 
         {% if "Maps" in modules %}
             <div class="card m-1 card-fitcontent p-2 resizable" id="map">
@@ -58,39 +259,39 @@
                 </div>
             </div>
         {% endif %}
-
-        {% if "CharCreator" in modules %}
+     
+        {% if "Locations" in modules %}
             <!-- card -->
-            <div class="card card-CharCreator m-1 p-1" id="char">
+            <div class="card card-CharCreator m-1 p-1" id="loc">
                 <div class="row m-1 justify-content-center">
-                    <h3 class="col-8 ms-2 ps-0">Characters</h3>
-                    <a class="btn btn-outline-info btn-newchar col-8 me-3" data-bs-toggle="offcanvas" href="#offcanvas" role="button" aria-controls="offcanvas">+</a>
+                    <h3 class="col-8 ms-2 ps-0">Locations</h3>
+                    <a class="btn btn-outline-info btn-newchar col-8 me-3" data-bs-toggle="offcanvas" href="#locoffcanvas" role="button" aria-controls="offcanvas">+</a>
                 </div>
                 <div class="mb-4">
-                    {% if characters %}
-                        {% for char in characters %}
-                            <p class="mb-0 mt-3">{{char}} --- 
-                            <a href="/delete_char/{{char}}" class="link link-bold">delete</a> / 
+                    {% if locations %}
+                        {% for loc in locations %}
+                            <p class="mb-0 mt-3">{{loc}} --- 
+                            <a href="/delete_loc/{{loc}}" class="link link-bold">delete</a> / 
                             
-                            <a data-bs-toggle="offcanvas" data-bs-target="#offcanvas{{ char|replace(' ', '_') }}" href="#offcanvas{{ char|replace(' ', '_') }}" role="button" aria-controls="offcanvas{{ char|replace(' ', '_') }}" class="link link-bold">edit</a>
+                            <a data-bs-toggle="offcanvas" data-bs-target="#locoffcanvas{{ loc|replace(' ', '_') }}" href="#locoffcanvas{{ loc|replace(' ', '_') }}" role="button" aria-controls="locoffcanvas{{ loc|replace(' ', '_') }}" class="link link-bold">edit</a>
 
                             </p>
                             <span class="m-0">
-                                {% for i in characters[char] %}
+                                {% for i in locations[loc] %}
                                     {{i}}.
                                 {% endfor %}
                             </p>
                         {% endfor %}
                     {% else %}
-                        <p> no characters </p>
+                        <p> no locations </p>
                     {% endif %}
                 </div>
             </div>
 
             <!-- creation offcanvas -->
-            <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvas" aria-labelledby="offcanvasLabel">
+            <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="locoffcanvas" aria-labelledby="locoffcanvasLabel">
                 <div class="offcanvas-header">
-                    <h5 class="offcanvas-title" id="offcanvasLabel">Create New Character</h5>
+                    <h5 class="offcanvas-title" id="locoffcanvasLabel">Create New Location</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
                 <div class="offcanvas-body">
@@ -98,132 +299,716 @@
                         {{form.hidden_tag()}}
                         <div class="modal-body">
                             <fieldset class="">
-                                {% for field in charfields %}
+                                {% for field in locfields %}
                                     <div class="form">
-                                        <h6>{{Charforms[field].label}}</h6>
-                                        {% if Charforms[field].errors %}
-                                            {{Charforms[field](class="form-control form-control-lg is-invalid")}}
+                                        <h6>{{Locforms[field].label}}</h6>
+                                        {% if Locforms[field].errors %}
+                                            {{Locforms[field](class="form-control form-control-lg is-invalid")}}
                                             <div class="invalid-feedback">
                                                 {% for error in errors %}
                                                     <span>{{error}}</span>
                                                 {% endfor %}
                                             </div>
                                         {% else %}
-                                            {{Charforms[field](class="form-control form-control-lg")}}
+                                            {{Locforms[field](class="form-control form-control-lg")}}
                                         {% endif %}
                                     </div>
                                 {% endfor %}
                             </fieldset>
                         </div>
                         <div class="modal-footer mt-3">
-                            {{Charforms.submit_create(class="btn btn-outline-info")}}
+                            {{Locforms.submit_create(class="btn btn-outline-info")}}
                         </div>
                     </form>
                 </div>
             </div>
 
-            {% for char in characters %}
-                <!-- editing offcanvas for {{char}} -->
-                <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvas{{ char|replace(' ', '_') }}" aria-labelledby="offcanvas{{ char|replace(' ', '_') }}Label">
+            {% for loc in locations %}
+                <!-- editing offcanvas for {{loc}} -->
+                <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="locoffcanvas{{ loc|replace(' ', '_') }}" aria-labelledby="locoffcanvas{{ loc|replace(' ', '_') }}Label">
                     <div class="offcanvas-header">
-                        <h5 class="offcanvas-title" id="offcanvas{{ char|replace(' ', '_') }}Label">Edit Character</h5>
+                        <h5 class="offcanvas-title" id="locoffcanvas{{ loc|replace(' ', '_') }}Label">Edit Location</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                     </div>
                     <div class="offcanvas-body">
                         <form method="POST" action="" novalidate>
                             {{form.hidden_tag()}}
-                            {{Charforms.HiddenCharName(value=char)}}
+                            {{Locforms.HiddenLocName(value=loc)}}
                             <div class="modal-body">
                                 <fieldset class="">
-                                    {% for field in editfields %}
+                                    {% for field in loceditfields %}
                                         <div class="form">
-                                            <h6>{{Charforms[field].label}}</h6>
-                                            {% if field == "ChangeCharacterName" %}
-                                                {{Charforms[field](class="form-control form-control-lg", value=char )}}
-                                            {% elif field == "ChangeCharacterDescription" %}
-                                                <!-- {{Charforms[field](class="form-control form-control-lg", default=characters[char][0] )}} --> <!-- sadly textareas dont allow changing the value in the html when using flask forms -->
-                                                <textarea class="form-control form-control-lg" id="ChangeCharacterDescription" name="ChangeCharacterDescription">{{characters[char][0]}}</textarea>
-                                            {% elif field == "ChangeCharacterBackstory" %}
-                                                <!-- {{Charforms[field](class="form-control form-control-lg", value=characters[char][1] )}} -->
-                                                <textarea class="form-control form-control-lg" id="ChangeCharacterBackstory" name="ChangeCharacterBackstory">{{characters[char][1]}}</textarea>
+                                            <h6>{{Locforms[field].label}}</h6>
+                                            {% if field == "ChangeLocationName" %}
+                                                {{Locforms[field](class="form-control form-control-lg", value=loc )}}
+                                            {% elif field == "ChangeLocationDescription" %}
+                                                <!-- {{Locforms[field](class="form-control form-control-lg", default=locations[loc][0] )}} --> <!-- sadly textareas dont allow changing the value in the html when using flask forms -->
+                                                <textarea class="form-control form-control-lg" id="ChangeLocationDescription" name="ChangeLocationDescription">{{locations[loc][0]}}</textarea>
+                                            {% elif field == "ChangeLocationBackstory" %}
+                                                <!-- {{Locforms[field](class="form-control form-control-lg", value=locations[loc][1] )}} -->
+                                                <textarea class="form-control form-control-lg" id="ChangeLocationBackstory" name="ChangeLocationBackstory">{{locations[loc][1]}}</textarea>
                                             {% endif %}
-                                            <!-- characters[char] -->
                                         </div>
                                     {% endfor %}
                                 </fieldset>
                             </div>
                             <div class="modal-footer mt-3">
-                                {{Charforms.submit_edit(class="btn btn-outline-info")}}
+                                {{Locforms.submit_edit(class="btn btn-outline-info")}}
                             </div>
                         </form>
                     </div>
                 </div>
             {% endfor %}
         {% endif %}
-        
-        {% if "Locations" in modules %}
-            <div class="card m-1">
-                placeholder for Locations module
-            </div>
-        {% endif %}
 
-        <!--
-        {% if "Historical" in modules %}
-            <div class="card m-1">
-                placeholder for Historical module
-            </div>
-        {% endif %}
         {% if "Hierarchy" in modules %}
             <div class="card m-1">
                 placeholder for Hierarchy module
             </div>
         {% endif %}
+
         {% if "Factions" in modules %}
-            <div class="card m-1">
-                placeholder for Factions module
+            <!-- card -->
+            <div class="card card-CharCreator m-1 p-1" id="fac">
+                <div class="row m-1 justify-content-center">
+                    <h3 class="col-8 ms-2 ps-0">Factions</h3>
+                    <a class="btn btn-outline-info btn-newchar col-8 me-3" data-bs-toggle="offcanvas" href="#facoffcanvas" role="button" aria-controls="offcanvas">+</a>
+                </div>
+                <div class="mb-4">
+                    {% if factions %}
+                        {% for fac in factions %}
+                            <p class="mb-0 mt-3">{{fac}} --- 
+                            <a href="/delete_fac/{{fac}}" class="link link-bold">delete</a> / 
+                            
+                            <a data-bs-toggle="offcanvas" data-bs-target="#facoffcanvas{{ fac|replace(' ', '_') }}" href="#facoffcanvas{{ fac|replace(' ', '_') }}" role="button" aria-controls="facoffcanvas{{ fac|replace(' ', '_') }}" class="link link-bold">edit</a>
+
+                            </p>
+                            <span class="m-0">
+                                {% for i in factions[fac] %}
+                                    {{i}}.
+                                {% endfor %}
+                            </p>
+                        {% endfor %}
+                    {% else %}
+                        <p> no factions </p>
+                    {% endif %}
+                </div>
             </div>
+
+            <!-- creation offcanvas -->
+            <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="facoffcanvas" aria-labelledby="facoffcanvasLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="facoffcanvasLabel">Create New Faction</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <form method="POST" action="" novalidate>
+                        {{form.hidden_tag()}}
+                        <div class="modal-body">
+                            <fieldset class="">
+                                {% for field in facfields %}
+                                    <div class="form">
+                                        <h6>{{Facforms[field].label}}</h6>
+                                        {% if Facforms[field].errors %}
+                                            {{Facforms[field](class="form-control form-control-lg is-invalid")}}
+                                            <div class="invalid-feedback">
+                                                {% for error in errors %}
+                                                    <span>{{error}}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{Facforms[field](class="form-control form-control-lg")}}
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </fieldset>
+                        </div>
+                        <div class="modal-footer mt-3">
+                            {{Facforms.submit_create(class="btn btn-outline-info")}}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% for fac in factions %}
+                <!-- editing offcanvas for {{fac}} -->
+                <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="facoffcanvas{{ fac|replace(' ', '_') }}" aria-labelledby="facoffcanvas{{ fac|replace(' ', '_') }}Label">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="facoffcanvas{{ fac|replace(' ', '_') }}Label">Edit Faction</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <form method="POST" action="" novalidate>
+                            {{form.hidden_tag()}}
+                            {{Facforms.HiddenFacName(value=fac)}}
+                            <div class="modal-body">
+                                <fieldset class="">
+                                    {% for field in faceditfields %}
+                                        <div class="form">
+                                            <h6>{{Facforms[field].label}}</h6>
+                                            {% if field == "ChangeFactionName" %}
+                                                {{Facforms[field](class="form-control form-control-lg", value=fac )}}
+                                            {% elif field == "ChangeFactionDescription" %}
+                                                <!-- {{Facforms[field](class="form-control form-control-lg", default=factions[fac][0] )}} --> <!-- sadly textareas dont allow changing the value in the html when using flask forms -->
+                                                <textarea class="form-control form-control-lg" id="ChangeFactionDescription" name="ChangeFactionDescription">{{factions[fac][0]}}</textarea>
+                                            {% elif field == "ChangeFactionBackstory" %}
+                                                <!-- {{Facforms[field](class="form-control form-control-lg", value=factions[fac][1] )}} -->
+                                                <textarea class="form-control form-control-lg" id="ChangeFactionBackstory" name="ChangeFactionBackstory">{{factions[fac][1]}}</textarea>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </fieldset>
+                            </div>
+                            <div class="modal-footer mt-3">
+                                {{Facforms.submit_edit(class="btn btn-outline-info")}}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
         {% endif %}
+
         {% if "Laws" in modules %}
-            <div class="card m-1">
-                placeholder for Laws module
+            <!-- card -->
+            <div class="card card-CharCreator m-1 p-1" id="law">
+                <div class="row m-1 justify-content-center">
+                    <h3 class="col-8 ms-2 ps-0">Laws</h3>
+                    <a class="btn btn-outline-info btn-newchar col-8 me-3" data-bs-toggle="offcanvas" href="#lawoffcanvas" role="button" aria-controls="offcanvas">+</a>
+                </div>
+                <div class="mb-4">
+                    {% if laws %}
+                        {% for law in laws %}
+                            <p class="mb-0 mt-3">{{law}} --- 
+                            <a href="/delete_law/{{law}}" class="link link-bold">delete</a> / 
+                            
+                            <a data-bs-toggle="offcanvas" data-bs-target="#lawoffcanvas{{ law|replace(' ', '_') }}" href="#lawoffcanvas{{ law|replace(' ', '_') }}" role="button" aria-controls="lawoffcanvas{{ law|replace(' ', '_') }}" class="link link-bold">edit</a>
+                            
+                            </p>
+                            <span class="m-0">
+                                {% for i in laws[law] %}
+                                    {{i}}.
+                                {% endfor %}
+                            </p>
+                        {% endfor %}
+                    {% else %}
+                        <p> lawless </p>
+                    {% endif %}
+                </div>
             </div>
+
+            <!-- creation offcanvas -->
+            <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="lawoffcanvas" aria-labelledby="lawoffcanvasLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="lawoffcanvasLabel">Create New Law</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <form method="POST" action="" novalidate>
+                        {{form.hidden_tag()}}
+                        <div class="modal-body">
+                            <fieldset class="">
+                                {% for field in lawfields %}
+                                    <div class="form">
+                                        <h6>{{Lawforms[field].label}}</h6>
+                                        {% if Lawforms[field].errors %}
+                                            {{Lawforms[field](class="form-control form-control-lg is-invalid")}}
+                                            <div class="invalid-feedback">
+                                                {% for error in errors %}
+                                                    <span>{{error}}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{Lawforms[field](class="form-control form-control-lg")}}
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </fieldset>
+                        </div>
+                        <div class="modal-footer mt-3">
+                            {{Lawforms.submit_create(class="btn btn-outline-info")}}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% for law in laws %}
+                <!-- editing offcanvas for {{law}} -->
+                <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="lawoffcanvas{{ law|replace(' ', '_') }}" aria-labelledby="lawoffcanvas{{ law|replace(' ', '_') }}Label">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="lawoffcanvas{{ law|replace(' ', '_') }}Label">Edit Law</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <form method="POST" action="" novalidate>
+                            {{form.hidden_tag()}}
+                            {{Lawforms.HiddenLawName(value=law)}}
+                            <div class="modal-body">
+                                <fieldset class="">
+                                    {% for field in laweditfields %}
+                                        <div class="form">
+                                            <h6>{{Lawforms[field].label}}</h6>
+                                            {% if field == "ChangeLawName" %}
+                                                {{Lawforms[field](class="form-control form-control-lg", value=law )}}
+                                            {% elif field == "ChangeLawDescription" %}
+                                                <!-- {{Lawforms[field](class="form-control form-control-lg", default=laws[law][0] )}} --> <!-- sadly textareas dont allow changing the value in the html when using flask forms -->
+                                                <textarea class="form-control form-control-lg" id="ChangeLawDescription" name="ChangeLawDescription">{{laws[law][0]}}</textarea>
+                                            {% elif field == "ChangeLawBackstory" %}
+                                                <!-- {{Lawforms[field](class="form-control form-control-lg", value=laws[law][1] )}} -->
+                                                <textarea class="form-control form-control-lg" id="ChangeLawBackstory" name="ChangeLawBackstory">{{laws[law][1]}}</textarea>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </fieldset>
+                            </div>
+                            <div class="modal-footer mt-3">
+                                {{Lawforms.submit_edit(class="btn btn-outline-info")}}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
         {% endif %}
+
         {% if "Cultures" in modules %}
-            <div class="card m-1">
-                placeholder for Cultures module
+            <!-- card -->
+            <div class="card card-CharCreator m-1 p-1" id="cul">
+                <div class="row m-1 justify-content-center">
+                    <h3 class="col-8 ms-2 ps-0">Cultures</h3>
+                    <a class="btn btn-outline-info btn-newchar col-8 me-3" data-bs-toggle="offcanvas" href="#culoffcanvas" role="button" aria-controls="offcanvas">+</a>
+                </div>
+                <div class="mb-4">
+                    {% if cultures %}
+                        {% for cul in cultures %}
+                            <p class="mb-0 mt-3">{{cul}} --- 
+                            <a href="/delete_cul/{{cul}}" class="link link-bold">delete</a> / 
+                            
+                            <a data-bs-toggle="offcanvas" data-bs-target="#culoffcanvas{{ cul|replace(' ', '_') }}" href="#culoffcanvas{{ cul|replace(' ', '_') }}" role="button" aria-controls="culoffcanvas{{ cul|replace(' ', '_') }}" class="link link-bold">edit</a>
+
+                            </p>
+                            <span class="m-0">
+                                {% for i in cultures[cul] %}
+                                    {{i}}.
+                                {% endfor %}
+                            </p>
+                        {% endfor %}
+                    {% else %}
+                        <p> no cultures </p>
+                    {% endif %}
+                </div>
             </div>
+
+            <!-- creation offcanvas -->
+            <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="culoffcanvas" aria-labelledby="culoffcanvasLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="culoffcanvasLabel">Create New Culture</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <form method="POST" action="" novalidate>
+                        {{form.hidden_tag()}}
+                        <div class="modal-body">
+                            <fieldset class="">
+                                {% for field in culfields %}
+                                    <div class="form">
+                                        <h6>{{Culforms[field].label}}</h6>
+                                        {% if Culforms[field].errors %}
+                                            {{Culforms[field](class="form-control form-control-lg is-invalid")}}
+                                            <div class="invalid-feedback">
+                                                {% for error in errors %}
+                                                    <span>{{error}}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{Culforms[field](class="form-control form-control-lg")}}
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </fieldset>
+                        </div>
+                        <div class="modal-footer mt-3">
+                            {{Culforms.submit_create(class="btn btn-outline-info")}}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% for cul in cultures %}
+                <!-- editing offcanvas for {{cul}} -->
+                <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="culoffcanvas{{ cul|replace(' ', '_') }}" aria-labelledby="culoffcanvas{{ cul|replace(' ', '_') }}Label">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="culoffcanvas{{ cul|replace(' ', '_') }}Label">Edit Culture</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <form method="POST" action="" novalidate>
+                            {{form.hidden_tag()}}
+                            {{Culforms.HiddenCulName(value=cul)}}
+                            <div class="modal-body">
+                                <fieldset class="">
+                                    {% for field in culeditfields %}
+                                        <div class="form">
+                                            <h6>{{Culforms[field].label}}</h6>
+                                            {% if field == "ChangeCultureName" %}
+                                                {{Culforms[field](class="form-control form-control-lg", value=cul )}}
+                                            {% elif field == "ChangeCultureDescription" %}
+                                                <!-- {{Culforms[field](class="form-control form-control-lg", default=cultures[cul][0] )}} --> <!-- sadly textareas dont allow changing the value in the html when using flask forms -->
+                                                <textarea class="form-control form-control-lg" id="ChangeCulDescription" name="ChangeCulDescription">{{cultures[cul][0]}}</textarea>
+                                            {% elif field == "ChangeCultureBackstory" %}
+                                                <!-- {{Culforms[field](class="form-control form-control-lg", value=cultures[cul][1] )}} -->
+                                                <textarea class="form-control form-control-lg" id="ChangeCulBackstory" name="ChangeCulBackstory">{{cultures[cul][1]}}</textarea>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </fieldset>
+                            </div>
+                            <div class="modal-footer mt-3">
+                                {{Culforms.submit_edit(class="btn btn-outline-info")}}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
         {% endif %}
+
         {% if "Technology" in modules %}
             <div class="card m-1">
                 placeholder for Technology module
             </div>
-        {% endif %}
+        {% endif %} 
+
         {% if "Languages" in modules %}
-            <div class="card m-1">
-                placeholder for Languages module
+            <!-- card -->
+            <div class="card card-LangCreator m-1 p-1" id="lang">
+                <div class="row m-1 justify-content-center">
+                    <h3 class="col-8 ms-2 ps-0">Languages</h3>
+                    <a class="btn btn-outline-info btn-newchar col-8 me-3" data-bs-toggle="offcanvas" href="#langoffcanvas" role="button" aria-controls="offcanvas">+</a>
+                </div>
+                <div class="mb-4">
+                    {% if languages %}
+                        {% for lang in languages %}
+                            <p class="mb-0 mt-3">{{lang}} --- 
+                            <a href="/delete_lang/{{lang}}" class="link link-bold">delete</a> / 
+                            
+                            <a data-bs-toggle="offcanvas" data-bs-target="#langoffcanvas{{ lang|replace(' ', '_') }}" href="#langoffcanvas{{ lang|replace(' ', '_') }}" role="button" aria-controls="langoffcanvas{{ lang|replace(' ', '_') }}" class="link link-bold">edit</a>
+
+                            </p>
+                            <span class="m-0">
+                                {% for i in languages[lang] %}
+                                    {{i}}.
+                                {% endfor %}
+                            </p>
+                        {% endfor %}
+                    {% else %}
+                        <p> no languages</p>
+                    {% endif %}
+                </div>
             </div>
+
+            <!-- creation offcanvas -->
+            <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="langoffcanvas" aria-labelledby="langoffcanvasLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="langoffcanvasLabel">Create New Language</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <form method="POST" action="" novalidate>
+                        {{form.hidden_tag()}}
+                        <div class="modal-body">
+                            <fieldset class="">
+                                {% for field in langfields %}
+                                    <div class="form">
+                                        <h6>{{Langforms[field].label}}</h6>
+                                        {% if Langforms[field].errors %}
+                                            {{Langforms[field](class="form-control form-control-lg is-invalid")}}
+                                            <div class="invalid-feedback">
+                                                {% for error in errors %}
+                                                    <span>{{error}}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{Langforms[field](class="form-control form-control-lg")}}
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </fieldset>
+                        </div>
+                        <div class="modal-footer mt-3">
+                            {{Langforms.submit_create(class="btn btn-outline-info")}}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% for lang in languages %}
+                <!-- editing offcanvas for {{lang}} -->
+                <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="langoffcanvas{{ lang|replace(' ', '_') }}" aria-labelledby="langoffcanvas{{ lang|replace(' ', '_') }}Label">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="langoffcanvas{{ lang|replace(' ', '_') }}Label">Edit Language</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <form method="POST" action="" novalidate>
+                            {{form.hidden_tag()}}
+                            {{Langforms.HiddenLangName(value=lang)}}
+                            <div class="modal-body">
+                                <fieldset class="">
+                                    {% for field in langeditfields %}
+                                        <div class="form">
+                                            <h6>{{Langforms[field].label}}</h6>
+                                            {% if field == "ChangeLanguageName" %}
+                                                {{Langforms[field](class="form-control form-control-lg", value=lang)}}
+                                            {% elif field == "ChangeLanguageDescription" %}
+                                                <!-- {{Langforms[field](class="form-control form-control-lg", default=languages[lang][0] )}} --> <!-- sadly textareas dont allow changing the value in the html when using flask forms -->
+                                                <textarea class="form-control form-control-lg" id="ChangeLanguageDescription" name="ChangeLanguageDescription">{{languages[lang][0]}}</textarea>
+                                            {% elif field == "ChangeLanguageBackstory" %}
+                                                <!-- {{Langforms[field](class="form-control form-control-lg", value=languages[lang][1] )}} -->
+                                                <textarea class="form-control form-control-lg" id="ChangeLanguageBackstory" name="ChangeLanguageBackstory">{{languages[lang][1]}}</textarea>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </fieldset>
+                            </div>
+                            <div class="modal-footer mt-3">
+                                {{Langforms.submit_edit(class="btn btn-outline-info")}}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
         {% endif %}
+
         {% if "Currency" in modules %}
             <div class="card m-1">
                 placeholder for Currency module
             </div>
-        {% endif %}
+        {% endif %} 
+
         {% if "Gameplay" in modules %}
             <div class="card m-1">
                 placeholder for Gameplay module
             </div>
-        {% endif %}
+        {% endif %} 
+
         {% if "Magic" in modules %}
-            <div class="card m-1">
-                placeholder for Magic module
+            <!-- card -->
+            <div class="card card-MagCreator m-1 p-1" id="mag">
+                <div class="row m-1 justify-content-center">
+                    <h3 class="col-8 ms-2 ps-0">Magic</h3>
+                    <a class="btn btn-outline-info btn-newchar col-8 me-3" data-bs-toggle="offcanvas" href="#magoffcanvas" role="button" aria-controls="offcanvas">+</a>
+                </div>
+                <div class="mb-4">
+                    {% if spells %}
+                        <div class="module-table">
+                            <div class="row m-0">
+                                <div class="col m-0 module-table-cell"><h5>Name</h5></div>
+                                <div class="col module-table-cell"><h5>Effect</h5></div>
+                                <div class="col module-table-cell"><h5>Cost</h5></div>
+                                <div class="col module-table-cell"><h5>Damage</h5></div>
+                                <div class="col module-table-cell"><h5>Options</h5></div>
+                            </div>
+                            {% for spell in spells %}
+                                <div class="row m-0">
+                                    <div class="col module-table-cell">
+                                        {{spell}}
+                                    </div>
+                                    {% for i in spells[spell] %}
+                                        <div class="col module-table-cell">
+                                            {{i}}
+                                        </div>
+                                    {% endfor %}
+                                    <div class="col module-table-cell">
+                                        <a href="/delete_spell/{{spell}}" class="link link-bold">delete</a>
+                                        <a data-bs-toggle="offcanvas" data-bs-target="#magoffcanvas{{ spell|replace(' ', '_') }}" href="#magoffcanvas{{ spell|replace(' ', '_') }}" role="button" aria-controls="magoffcanvas{{ spell|replace(' ', '_') }}" class="link link-bold">edit</a>
+                                    </div>
+                                    
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p> no spells</p>
+                    {% endif %}
+                </div>
             </div>
+
+            <!-- creation offcanvas -->
+            <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="magoffcanvas" aria-labelledby="magoffcanvasLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="magoffcanvasLabel">Create New Spell</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <form method="POST" action="" novalidate>
+                        {{form.hidden_tag()}}
+                        <div class="modal-body">
+                            <fieldset class="">
+                                {% for field in magfields %}
+                                    <div class="form">
+                                        <h6>{{Magforms[field].label}}</h6>
+                                        {% if Magforms[field].errors %}
+                                            {{Magforms[field](class="form-control form-control-lg is-invalid")}}
+                                            <div class="invalid-feedback">
+                                                {% for error in errors %}
+                                                    <span>{{error}}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{Magforms[field](class="form-control form-control-lg")}}
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </fieldset>
+                        </div>
+                        <div class="modal-footer mt-3">
+                            {{Magforms.submit_create(class="btn btn-outline-info")}}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            
+            {% for spell in spells %}
+                <!-- editing offcanvas for {{spell}} -->
+                <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="magoffcanvas{{ spell|replace(' ', '_') }}" aria-labelledby="magoffcanvas{{ spell|replace(' ', '_') }}Label">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="magoffcanvas{{ spell|replace(' ', '_') }}Label">Edit Spell</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <form method="POST" action="" novalidate>
+                            {{form.hidden_tag()}}
+                            {{Magforms.HiddenSpellName(value=spell)}}
+                            <div class="modal-body">
+                                <fieldset class="">
+                                    {% for field in mageditfields %}
+                                        <div class="form">
+                                            <h6>{{Magforms[field].label}}</h6>
+                                            {% if field == "ChangeSpellName" %}
+                                                {{Magforms[field](class="form-control form-control-lg", value=spell)}}
+                                            {% elif field == "ChangeSpellDescription" %}
+                                                <!-- {{Magforms[field](class="form-control form-control-lg", default=spells[spell][0] )}} --> <!-- sadly textareas dont allow changing the value in the html when using flask forms -->
+                                                <textarea class="form-control form-control-lg" id="ChangeSpellDescription" name="ChangeSpellDescription">{{spells[spell][0]}}</textarea>
+                                            {% elif field == "ChangeSpellCost" %}
+                                                {{Magforms[field](class="form-control form-control-lg", value=spells[spell][1])}}
+                                            {% elif field == "ChangeSpellDamage" %}
+                                                {{Magforms[field](class="form-control form-control-lg", value=spells[spell][2])}}
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </fieldset>
+                            </div>
+                            <div class="modal-footer mt-3">
+                                {{Magforms.submit_edit(class="btn btn-outline-info")}}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
         {% endif %}
+
         {% if "Quests" in modules %}
-            <div class="card m-1">
-                placeholder for Quests module
+            <!-- card -->
+            <div class="card card-CharCreator m-1 p-1" id="quest">
+                <div class="row m-1 justify-content-center">
+                    <h3 class="col-8 ms-2 ps-0">Quests</h3>
+                    <a class="btn btn-outline-info btn-newchar col-8 me-3" data-bs-toggle="offcanvas" href="#questoffcanvas" role="button" aria-controls="offcanvas">+</a>
+                </div>
+                <div class="mb-4">
+                    {% if quests %}
+                        {% for quest in quests %}
+                            <p class="mb-0 mt-3">{{quest}} --- 
+                            <a href="/delete_quest/{{quest}}" class="link link-bold">delete</a> / 
+                            
+                            <a data-bs-toggle="offcanvas" data-bs-target="#questoffcanvas{{ quest|replace(' ', '_') }}" href="#questoffcanvas{{ quest|replace(' ', '_') }}" role="button" aria-controls="questoffcanvas{{ quest|replace(' ', '_') }}" class="link link-bold">edit</a>
+
+                            </p>
+                            <span class="m-0">
+                                {% for i in quests[quest] %}
+                                    {{i}}.
+                                {% endfor %}
+                            </p>
+                        {% endfor %}
+                    {% else %}
+                        <p> no quests</p>
+                    {% endif %}
+                </div>
             </div>
+
+            <!-- creation offcanvas -->
+            <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="questoffcanvas" aria-labelledby="questoffcanvasLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="questoffcanvasLabel">Create New Quest</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <form method="POST" action="" novalidate>
+                        {{form.hidden_tag()}}
+                        <div class="modal-body">
+                            <fieldset class="">
+                                {% for field in questfields %}
+                                    <div class="form">
+                                        <h6>{{Questforms[field].label}}</h6>
+                                        {% if Questforms[field].errors %}
+                                            {{Questforms[field](class="form-select form-select-lg form-control form-control-lg is-invalid")}}
+                                            <div class="invalid-feedback">
+                                                {% for error in errors %}
+                                                    <span>{{error}}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{Questforms[field](class="form-select form-select-lg form-control form-control-lg")}}
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </fieldset>
+                        </div>
+                        <div class="modal-footer mt-3">
+                            {{Questforms.submit_create(class="btn btn-outline-info")}}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% for quest in quests %}
+                <!-- editing offcanvas for {{quest}} -->
+                <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="questoffcanvas{{ quest|replace(' ', '_') }}" aria-labelledby="questoffcanvas{{ quest|replace(' ', '_') }}Label">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="questoffcanvas{{ quest|replace(' ', '_') }}Label">Edit Quest</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <form method="POST" action="" novalidate>
+                            {{form.hidden_tag()}}
+                            {{Questforms.HiddenQuestName(value=quest)}}
+                            <div class="modal-body">
+                                <fieldset class="">
+                                    {% for field in questeditfields %}
+                                        <div class="form">
+                                            <h6>{{Questforms[field].label}}</h6>
+                                            {% if field == "ChangeQuestName" %}
+                                                {{Questforms[field](class="form-control form-control-lg", value=quest)}}
+                                            {% elif field == "ChangeQuestTask" %}
+                                                <textarea class="form-control form-control-lg" id="ChangeQuestTask" name="ChangeQuestTask">{{quests[quest][0]}}</textarea>
+                                            {% elif field == "ChangeQuestStart" %}
+                                                {{Questforms[field](class="form-select form-select-lg", data_live_search="true", value=quests[quest][1])}}
+                                            {% elif field == "ChangeQuestFinish" %}
+                                                {{Questforms[field](class="form-select form-select-lg", data_live_search="true", value=quests[quest][2])}}
+                                            {% elif field == "ChangeQuestReward" %}
+                                                {{Questforms[field](class="form-control form-control-lg", value=quests[quest][3])}}
+                                            {% endif %}
+                                            
+
+                                        </div>
+                                    {% endfor %}
+                                </fieldset>
+                            </div>
+                            <div class="modal-footer mt-3">
+                                {{Questforms.submit_edit(class="btn btn-outline-info")}}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
         {% endif %}
-        -->
     </div>
 
     <form action="/delete_world/{{world_name}}" method="POST" class="m-1"><button class="btn btn-outline-danger" type="submit">delete world</button></form>
@@ -259,3 +1044,5 @@
     <a href="{{url_for('home')}}" class="me-2 link link-bold">Return Home</a>
 
 {% endblock navbar_right %}
+
+
