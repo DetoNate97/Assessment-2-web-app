@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, flash, session
 from flask_login import login_user, logout_user # not used, but remember to use next time i need to make a login system
-from forms import RegisterForm, LoginForm, CustomSelectForm, ChangeWorldNameForm, CharForms, MapForm, AccountForm, LocForms, HistForms, FacForms, LawForms, CulForms, LangForms, MagForms, QuestForms
+from forms import RegisterForm, LoginForm, CustomSelectForm, ChangeWorldNameForm, CharForms, MapForm, AccountForm, LocForms, HistForms, FacForms, LawForms, CulForms, TechForms, LangForms, MagForms, QuestForms
 import os, sqlite3, secrets, json, time
 from cryptography.fernet import Fernet
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -10,43 +10,9 @@ from werkzeug.utils import secure_filename
 # print(hashlib.algorithms_available)
 # output = hashlib.sha256(input.encode()).hexdigest()
 
-# switched from hashlib to werkzeug because generate_password_hash does exactly the same thing but i dont have to code it.
-# also encryption doesnt work when the key changes so the key needs to be stored as well to even read or compare the password for logins.
-# but that is basically storing the key and lock in the same place so defeats the purpose of encrypting it in the first place.
-# reminder to switch to just hashing it so i dont need to store the key...
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_hex(16)
 app.config['MAPS_FOLDER'] = os.path.join("static", "maps")
-key = Fernet.generate_key()
-cipher = Fernet(key)
-KEY = key.decode()
-salt = os.urandom(16) # is this even used for anything? no, me, it isnt.
-
-def encrypt_message(msg):
-    '''
-    encrypts the input message with the generated encryption key
-    
-    Parameters:
-        msg(str): the string to be encrypted
-
-    Returns:
-        an encrypted string
-    '''
-    return (cipher.encrypt(msg.encode())).decode()
-    
-def decrypt_message(msg, key):
-    '''
-    decrypts the input message with the generated encryption key
-    
-    Parameters:
-        msg(str): the string to be decrypted
-
-    Returns:
-        a decrypted string
-    '''
-    cipher = Fernet(key.encode())
-    return (cipher.decrypt(msg.encode())).decode()
 
 # database file path:
 db_path = os.path.join("database", "database.db")
@@ -90,16 +56,14 @@ def login():
         # get submitted data:
         log_user, log_pass = str(form.FloatingUsername.data), str(form.FloatingPassword.data) 
         # get stored password:
-        db_data = DB.execute("SELECT password,key FROM Users WHERE username = ?", [log_user]).fetchall() # db_data is in the format [("password", "key")]. why, sql, why.
+        db_data = DB.execute("SELECT password FROM Users WHERE username = ?", [log_user]).fetchall() # db_data is in the format [("password")]. why, sql, why.
         # check if there is a stored password:
         if not db_data: 
             flash(f'Failed to log in, user {log_user} does not exist', 'danger')
         else: 
-            db_password = db_data[0][0] # gets the data out of the stupid double tuple trouble.
-            db_key = db_data[0][1]
-            db_password = decrypt_message(db_password, db_key)  
+            password_hash = db_data[0][0] # gets the data out of the stupid double tuple trouble.
             # compare input and stored passwords:
-            if db_password == log_pass:
+            if check_password_hash(password_hash, log_pass):
                 flash(f'Successfully logged in user {log_user}!', 'success')    
                 session['current_user'] = log_user
                 session['user_worlds'] = os.path.join("database", f"{log_user}_worlds.ndjson")
@@ -130,7 +94,7 @@ def register():
         if not DB.execute( f"SELECT password FROM Users WHERE username = ?", [reg_user] ).fetchall():
             # save new user to the database:
             cursor = DB.cursor()
-            cursor.execute("INSERT INTO Users (username, email, password, key) VALUES (?, ?, ?, ?)", (reg_user, reg_email, f"{encrypt_message(reg_pass)}", KEY))
+            cursor.execute("INSERT INTO Users (username, email, password) VALUES (?, ?, ?)", (reg_user, reg_email, f"{generate_password_hash(reg_pass)}"))
             DB.commit()
             session['current_user'] = reg_user
             # set the path for the user's stored worlds:
@@ -181,7 +145,28 @@ def home():
     if form.validate_on_submit():
         if not form.worldnamefield.data:
             world_name = "New_World"
+            check = False
+            world_num = 0
+
+            for world in data:
+                if world["name"] == "New_World":
+                    check=False
+                
+            while check != True:
+                for world in data:
+                    if world["name"] == world_name:
+                        world_num += 1
+                        world_name = f"New_World_{world_num}"
+                    else:
+                        check=True
+                    
         else:
+            for world in data:
+                if form.worldnamefield.data != world["name"]:
+                    pass
+                else:
+                    flash('name already exists', 'danger')
+                    return redirect(url_for("home"))
             world_name = form.worldnamefield.data
         # record the selected modules:
         modules = []
@@ -206,6 +191,8 @@ def home():
             data["laws"] = {}
         if "Cultures" in modules:
             data["cultures"] = {}
+        if "Technology" in modules:
+            data["technology"] = {"":["",""]}
         if "Languages" in modules:
             data["languages"] = {}
         if "Magic" in modules:
@@ -230,10 +217,8 @@ def settings():
     current_user = session.get('current_user')
     if not current_user:
         return redirect(url_for("login"))
-    db_data = DB.execute( f"SELECT password, key FROM Users WHERE username = ?", [current_user] ).fetchall()
-    db_password = db_data[0][0]
-    db_key = db_data[0][1]
-    db_password = decrypt_message(db_password, db_key)
+    db_data = DB.execute( f"SELECT password FROM Users WHERE username = ?", [current_user] ).fetchall()
+    password_hash = db_data[0][0]
     email = (DB.execute( f"SELECT email FROM Users WHERE username = ?", [current_user] ).fetchall())[0][0]
     default = {"Username": current_user, "Email": email}
     if form.validate_on_submit():
@@ -247,10 +232,10 @@ def settings():
             cursor.execute("UPDATE Users SET email=? WHERE username=?", [form.Email.data, current_user])
             DB.commit()
         if form.NewPassword.data:
-            if form.CurrentPassword.data == db_password:
-                encrypted_password = encrypt_message(form.NewPassword.data)
+            if check_password_hash(password_hash, form.CurrentPassword.data):
+                hash_password = generate_password_hash(form.NewPassword.data)
                 cursor = DB.cursor()
-                cursor.execute("UPDATE Users SET password=?,key=? WHERE username=?", [encrypted_password, KEY, current_user])
+                cursor.execute("UPDATE Users SET password=? WHERE username=?", [hash_password, current_user])
                 DB.commit()
                 pass
             else:
@@ -371,6 +356,7 @@ def world(world_name):
     Facforms = FacForms()
     Lawforms = LawForms()
     Culforms = CulForms()
+    Techforms = TechForms()
     Langforms = LangForms()
     Magforms = MagForms()
     Questforms = QuestForms()
@@ -387,18 +373,14 @@ def world(world_name):
     laweditfields = Lawforms.EditFields
     culfields = Culforms.CulFields
     culeditfields = Culforms.EditFields
+    techfields = Techforms.TechFields
+    techeditfields = Techforms.EditFields
     langfields = Langforms.LangFields
     langeditfields = Langforms.EditFields
     magfields = Magforms.MagFields
     mageditfields = Magforms.EditFields
     questfields = Questforms.QuestFields
     questeditfields = Questforms.EditFields
-
-
-    
-
-
-
     
     # checks the filetype of the currently saved map
     ext = ""
@@ -487,6 +469,17 @@ def world(world_name):
             if i["name"] == world_name:
                 cultures = i["cultures"]
         data = []
+
+    technology = []
+    if "Technology" in modules:
+        with open(user_worlds, "r") as file:
+            for line in file:
+                world = json.loads(line)
+                data.append(world)
+        for i in data:
+            if i["name"] == world_name:
+                technology = i["technology"]
+        data = []
     
     languages = []
     if "Languages" in modules:
@@ -537,11 +530,17 @@ def world(world_name):
         editcharback = Charforms.ChangeCharacterBackstory.data
 
         locname = Locforms.CreateLocationName.data
-        locdesc = Locforms.CreateLocationDescription.data
-        locback = Locforms.CreateLocationBackstory.data
+        locfac = Locforms.CreateLocationFaction.data
+        loceco = Locforms.CreateLocationEconomy.data
+        loccul = Locforms.CreateLocationCultures.data
+        loclang = Locforms.CreateLocationLanguages.data
+        locgov = Locforms.CreateLocationGovernment.data
         editlocname = Locforms.ChangeLocationName.data
-        editlocdesc = Locforms.ChangeLocationDescription.data
-        editlocback = Locforms.ChangeLocationBackstory.data
+        editlocfac = Locforms.ChangeLocationFaction.data
+        editloceco = Locforms.ChangeLocationEconomy.data
+        editloccul = Locforms.ChangeLocationCultures.data
+        editloclang = Locforms.ChangeLocationLanguages.data
+        editlocgov = Locforms.ChangeLocationGovernment.data
 
         eventname = Histforms.CreateEventName.data
         eventdesc = Histforms.CreateEventDescription.data
@@ -570,6 +569,13 @@ def world(world_name):
         editculname = Culforms.ChangeCultureName.data
         editculdesc = Culforms.ChangeCultureDescription.data
         editculback = Culforms.ChangeCultureBackstory.data
+
+        techname = Techforms.CreateTechnologyName.data
+        techdesc = Techforms.CreateTechnologyDescription.data
+        techback = Techforms.CreateTechnologyBackstory.data
+        edittechname = Techforms.ChangeTechnologyName.data
+        edittechdesc = Techforms.ChangeTechnologyDescription.data
+        edittechback = Techforms.ChangeTechnologyBackstory.data
 
         langname = Langforms.CreateLanguageName.data
         langdesc = Langforms.CreateLanguageDescription.data
@@ -669,8 +675,8 @@ def world(world_name):
                 flash('make sure all fields are filled', 'danger')
                 return redirect(url_for("world", world_name=world_name))
             
-        if locname or locdesc or locback:
-            if locname and locdesc and locback:
+        if locname or locfac or loceco or loccul or loclang or locgov:
+            if locname and locfac and loceco and loccul and loclang and locgov:
                 data = []
                 with open(user_worlds, "r") as file:
                     for line in file:
@@ -678,7 +684,7 @@ def world(world_name):
                         data.append(world)
                 for i in data:
                     if i["name"] == world_name:
-                        i["locations"][locname] = [locdesc, locback]
+                        i["locations"][locname] = [locfac, loceco, loccul, loclang, locgov]
                 with open(user_worlds, 'w') as file:
                     for obj in data:
                         file.write(json.dumps(obj) + "\n")
@@ -687,8 +693,8 @@ def world(world_name):
                 flash('make sure all fields are filled', 'danger')
                 return redirect(url_for("world", world_name=world_name))
             
-        if editlocname or editlocdesc or editlocback:
-            if editlocname and editlocdesc and editlocback:
+        if editlocname or editlocfac or editloceco or editloccul or editloclang or editlocgov:
+            if editlocname and editlocfac and editloceco and editloccul and editloclang and editlocgov:
                 data = []
                 with open(user_worlds, "r") as file:
                     for line in file:
@@ -698,7 +704,7 @@ def world(world_name):
                     if i["name"] == world_name:
                         for loc in i['locations']:
                             if loc == Locforms.HiddenLocName.data:
-                                i['locations'][loc] = [editlocdesc, editlocback]
+                                i['locations'][loc] = [editlocfac, editloceco, editloccul, editloclang, editlocgov]
                 with open(user_worlds, 'w') as file:
                     for obj in data:
                         file.write(json.dumps(obj) + "\n")
@@ -859,6 +865,24 @@ def world(world_name):
                 flash('make sure all fields are filled', 'danger')
                 return redirect(url_for("world", world_name=world_name))
             
+        if edittechdesc:
+            data = []
+            with open(user_worlds, "r") as file:
+                for line in file:
+                    world = json.loads(line)
+                    data.append(world)
+            for i in data:
+                if i["name"] == world_name:
+                    for tech in i['technology']:
+                        if tech == Techforms.HiddenTechName.data:
+                            i['technology'][tech] = [edittechdesc, edittechback]
+                            i['technology'][edittechname] = i['technology'].pop(tech)
+                            break
+            with open(user_worlds, 'w') as file:
+                for obj in data:
+                    file.write(json.dumps(obj) + "\n")
+            return redirect(url_for("world", world_name=world_name))
+            
         if langname or langdesc or langback:
             if langname and langdesc and langback:
                 data = []
@@ -1006,7 +1030,7 @@ def world(world_name):
         # anyway make sure every combination of filled and unfilled fields has an outcome that doesnt crash
 
     # maybe i should add all the jinja variables to a list or smth so that it doesnt go all the way out there -->                                                                                                                                                                                                                                 
-    return render_template(f'world.html', world_name=world_name, current_user=current_user, modules=modules, form=form, Charforms=Charforms, Locforms=Locforms, Histforms=Histforms, Facforms=Facforms, Lawforms=Lawforms, Culforms=Culforms, Langforms=Langforms, Magforms=Magforms, Questforms=Questforms, Mapform=Mapform, charfields=charfields, chareditfields=chareditfields, characters=characters, locfields=locfields, loceditfields=loceditfields, locations=locations, histfields=histfields, histeditfields=histeditfields, events=events, facfields=facfields, faceditfields=faceditfields, factions=factions, lawfields=lawfields, laweditfields=laweditfields, laws=laws, culfields=culfields, culeditfields=culeditfields, cultures=cultures, langfields=langfields, langeditfields=langeditfields, languages=languages, magfields=magfields, mageditfields=mageditfields, spells=spells, questfields=questfields, questeditfields=questeditfields, quests=quests, ext=ext)
+    return render_template(f'world.html', world_name=world_name, current_user=current_user, modules=modules, form=form, Charforms=Charforms, Locforms=Locforms, Histforms=Histforms, Facforms=Facforms, Lawforms=Lawforms, Culforms=Culforms, Techforms=Techforms, Langforms=Langforms, Magforms=Magforms, Questforms=Questforms, Mapform=Mapform, charfields=charfields, chareditfields=chareditfields, characters=characters, locfields=locfields, loceditfields=loceditfields, locations=locations, histfields=histfields, histeditfields=histeditfields, events=events, facfields=facfields, faceditfields=faceditfields, factions=factions, lawfields=lawfields, laweditfields=laweditfields, laws=laws, culfields=culfields, culeditfields=culeditfields, cultures=cultures, techfields=techfields, techeditfields=techeditfields, technology=technology, langfields=langfields, langeditfields=langeditfields, languages=languages, magfields=magfields, mageditfields=mageditfields, spells=spells, questfields=questfields, questeditfields=questeditfields, quests=quests, ext=ext)
 
 @app.route('/delete_world/<world_name>', methods=['POST'])
 def delete_world(world_name):
@@ -1169,6 +1193,25 @@ def delete_cul(cul_name):
                 if cul != cul_name:
                     kept_culs[cul] = world['cultures'][cul]
             world['cultures'] = kept_culs
+    if data:
+        with open(user_worlds, 'w') as file:
+            for obj in data:
+                file.write(json.dumps(obj) + "\n")
+    return redirect(url_for("world", world_name=world_name))
+
+@app.route('/delete_tech/<tech_name>', methods=['GET', 'POST'])
+def delete_tech(tech_name):
+    user_worlds = session.get('user_worlds')
+    world_name = session.get('world_name')
+    data = []
+    with open(user_worlds, "r") as file:
+        for line in file:
+            world = json.loads(line)
+            data.append(world)
+    for world in data:
+        if world['name'] == world_name:
+            world['technology'][tech_name] = ["",""]
+            world['technology'][""] = world['technology'].pop(tech_name)
     if data:
         with open(user_worlds, 'w') as file:
             for obj in data:

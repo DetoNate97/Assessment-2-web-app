@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, FileField, TextAreaField, SelectField, IntegerField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, FileField, TextAreaField, SelectField, SelectMultipleField
 from wtforms.validators import Length, EqualTo, InputRequired, Optional
 from flask_wtf.file import FileAllowed, FileRequired
 
@@ -24,20 +24,20 @@ class CustomSelectForm(FlaskForm):
     # characters:
     CharCreator = BooleanField('Character Creator', default="checked")
     # setting
-    Historical = BooleanField('Historical Events and Folklore', render_kw={'disabled': ""})
+    Historical = BooleanField('Historical Events and Folklore')
     Maps = BooleanField('Maps', default="checked")
     Locations = BooleanField('Locations')
-    Hierarchy = BooleanField('Hierarchy System', render_kw={'disabled': ""})
-    Factions = BooleanField('Factions and Aliances', render_kw={'disabled': ""})
-    Laws = BooleanField('Laws', render_kw={'disabled': ""})
-    Cultures = BooleanField('Cultures', render_kw={'disabled': ""})
-    Technology = BooleanField('Technological Advancements', render_kw={'disabled': ""})
-    Languages = BooleanField('Languages', render_kw={'disabled': ""})
-    Currency = BooleanField('Currency System', render_kw={'disabled': ""})
+    Hierarchy = BooleanField('Hierarchy System')
+    Factions = BooleanField('Factions and Aliances')
+    Laws = BooleanField('Laws')
+    Cultures = BooleanField('Cultures')
+    Technology = BooleanField('Technological Advancements')
+    Languages = BooleanField('Languages')
+    Currency = BooleanField('Currency System')
     # gameplay
-    Gameplay = BooleanField('Gameplay Mechanics', render_kw={'disabled': ""})
-    Magic = BooleanField('Magic System', render_kw={'disabled': ""})
-    Quests = BooleanField('Player Interactions and Quests', render_kw={'disabled': ""})
+    Gameplay = BooleanField('Gameplay Mechanics')
+    Magic = BooleanField('Magic System')
+    Quests = BooleanField('Player Interactions and Quests')
 
     submit = SubmitField('Create World')
 
@@ -78,17 +78,23 @@ class UploadForm(FlaskForm):
 
 class LocForms(FlaskForm):
     CreateLocationName = StringField('Location Name')
-    CreateLocationDescription = TextAreaField('Location Description')
-    CreateLocationBackstory = TextAreaField('Location Backstory')
-    LocFields = ("CreateLocationName", "CreateLocationDescription", "CreateLocationBackstory")
+    CreateLocationFaction = SelectField('Dominant Faction')
+    CreateLocationEconomy = StringField('Location Economy')
+    CreateLocationCultures = SelectMultipleField('Cultures Present')
+    CreateLocationLanguages = SelectMultipleField('Languages Present')
+    CreateLocationGovernment = StringField('Government type')
+    LocFields = ("CreateLocationName", "CreateLocationFaction", "CreateLocationEconomy", "CreateLocationCultures", "CreateLocationLanguages", "CreateLocationGovernment")
     submit_create = SubmitField('Create Location')
 
     HiddenLocName = StringField(render_kw={'style': 'display:none', 'value':'none'}) # for checking which character is being edited, since the name can be changed
     ChangeLocationName = StringField('Location Name')
-    ChangeLocationDescription = TextAreaField('Location Description')
-    ChangeLocationBackstory = TextAreaField('Location Backstory')
+    ChangeLocationFaction = SelectField('Dominant Faction')
+    ChangeLocationEconomy = StringField('Location Economy')
+    ChangeLocationCultures = SelectMultipleField('Cultures Present')
+    ChangeLocationLanguages = SelectMultipleField('Languages Present')
+    ChangeLocationGovernment = StringField('Government type')
     submit_edit = SubmitField('Submit Changes')
-    EditFields = ("ChangeLocationName", "ChangeLocationDescription", "ChangeLocationBackstory")
+    EditFields = ("ChangeLocationName", "ChangeLocationFaction", "ChangeLocationEconomy", "ChangeLocationCultures", "ChangeLocationLanguages", "ChangeLocationGovernment")
 
 class HistForms(FlaskForm):
     CreateEventName = StringField('Event Name')
@@ -145,13 +151,20 @@ class CulForms(FlaskForm):
     ChangeCultureBackstory = TextAreaField('Culture Backstory')
     submit_edit = SubmitField('Submit Changes')
     EditFields = ("ChangeCultureName", "ChangeCultureDescription", "ChangeCultureBackstory")
+    
+class TechForms(FlaskForm):
+    CreateTechnologyName = StringField('Technology Name')
+    CreateTechnologyDescription = TextAreaField('Technology Description')
+    CreateTechnologyBackstory = TextAreaField('Technology Backstory')
+    TechFields = ("CreateTechnologyName", "CreateTechnologyDescription", "CreateTechnologyBackstory")
+    submit_create = SubmitField('Create Technology')
 
-class TechForm(FlaskForm):
-    CreateTechnology = TextAreaField('Description of technological level')
-    submit_create = SubmitField('Save')
-
-    EditTechnology = TextAreaField('Description of technological level')
-    submit_edit = SubmitField('Save')
+    HiddenTechName = StringField(render_kw={'style': 'display:none', 'value':'none'}) # for checking which character is being edited, since the name can be changed
+    ChangeTechnologyName = StringField('Technology Name')
+    ChangeTechnologyDescription = TextAreaField('Technology Description')
+    ChangeTechnologyBackstory = TextAreaField('Technology Backstory')
+    submit_edit = SubmitField('Submit Change')
+    EditFields = ("ChangeTechnologyName", "ChangeTechnologyDescription", "ChangeTechnologyBackstory")
 
 class LangForms(FlaskForm):
     CreateLanguageName = StringField('Language Name')

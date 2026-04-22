@@ -341,12 +341,16 @@
                                             <h6>{{Locforms[field].label}}</h6>
                                             {% if field == "ChangeLocationName" %}
                                                 {{Locforms[field](class="form-control form-control-lg", value=loc )}}
-                                            {% elif field == "ChangeLocationDescription" %}
-                                                <!-- {{Locforms[field](class="form-control form-control-lg", default=locations[loc][0] )}} --> <!-- sadly textareas dont allow changing the value in the html when using flask forms -->
-                                                <textarea class="form-control form-control-lg" id="ChangeLocationDescription" name="ChangeLocationDescription">{{locations[loc][0]}}</textarea>
-                                            {% elif field == "ChangeLocationBackstory" %}
-                                                <!-- {{Locforms[field](class="form-control form-control-lg", value=locations[loc][1] )}} -->
-                                                <textarea class="form-control form-control-lg" id="ChangeLocationBackstory" name="ChangeLocationBackstory">{{locations[loc][1]}}</textarea>
+                                            {% elif field == "ChangeLocationFaction" %}
+                                                <textarea class="form-control form-control-lg" id="ChangeLocationFaction" name="ChangeLocationFaction">{{locations[loc][0]}}</textarea>
+                                            {% elif field == "ChangeLocationEconomy" %}
+                                                <textarea class="form-control form-control-lg" id="ChangeLocationEconomy" name="ChangeLocationEconomy">{{locations[loc][1]}}</textarea>
+                                            {% elif field == "ChangeLocationCultures" %}
+                                                <textarea class="form-control form-control-lg" id="ChangeLocationCultures" name="ChangeLocationCultures">{{locations[loc][1]}}</textarea>
+                                            {% elif field == "ChangeLocationLanguages" %}
+                                                <textarea class="form-control form-control-lg" id="ChangeLocationLanguages" name="ChangeLocationLanguages">{{locations[loc][1]}}</textarea>
+                                            {% elif field == "ChangeLocationGovernment" %}
+                                                <textarea class="form-control form-control-lg" id="ChangeLocationGovernment" name="ChangeLocationGovernment">{{locations[loc][1]}}</textarea>
                                             {% endif %}
                                         </div>
                                     {% endfor %}
@@ -671,10 +675,109 @@
         {% endif %}
 
         {% if "Technology" in modules %}
-            <div class="card m-1">
-                placeholder for Technology module
+            <!-- card -->
+            <div class="card card-TechCreator m-1 p-1" id="tech">
+                <div class="row m-1 justify-content-center">
+                    <h3 class="ms-2 ps-0">Technology</h3>
+                    <!-- <a class="btn btn-outline-info btn-newchar col-8 me-3" data-bs-toggle="offcanvas" href="#techoffcanvas" role="button" aria-controls="offcanvas">+</a> -->
+                </div> 
+                {% for tech in technology %}
+                    <button data-bs-toggle="offcanvas" data-bs-target="#techoffcanvas" href="#techoffcanvas" role="button" aria-controls="techoffcanvas" class="techedit">{{technology[tech][0]}}</button>
+                {% endfor %}
+                    <!-- {% if technology %}
+                        {% for tech in technology %}
+                            <p class="mb-0 mt-3">{{tech}} --- 
+                            
+                            <a data-bs-toggle="offcanvas" data-bs-target="#techoffcanvas{{ tech|replace(' ', '_') }}" href="#techoffcanvas{{ tech|replace(' ', '_') }}" role="button" aria-controls="techoffcanvas{{ tech|replace(' ', '_') }}" class="link link-bold">edit</a>
+
+                            </p>
+                            <span class="m-0">
+                                {% for i in technology[tech] %}
+                                    {{i}}.
+                                {% endfor %}
+                            </p>
+                        {% endfor %}
+                    {% else %}
+                        <p> no technology </p>
+                    {% endif %} -->
             </div>
-        {% endif %} 
+
+            <!-- creation offcanvas -->
+            <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="techoffcanvas1" aria-labelledby="techoffcanvas1Label">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="techoffcanvas1Label">Create New Technology</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <form method="POST" action="" novalidate>
+                        {{form.hidden_tag()}}
+                        <div class="modal-body">
+                            <fieldset class="">
+                                {% for field in techfields %}
+                                    <div class="form">
+                                        <h6>{{Techforms[field].label}}</h6>
+                                        {% if Techforms[field].errors %}
+                                            {{Techforms[field](class="form-control form-control-lg is-invalid")}}
+                                            <div class="invalid-feedback">
+                                                {% for error in errors %}
+                                                    <span>{{error}}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{Techforms[field](class="form-control form-control-lg")}}
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </fieldset>
+                        </div>
+                        <div class="modal-footer mt-3">
+                            {{Techforms.submit_create(class="btn btn-outline-info")}}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% for tech in technology %}
+                <!-- editing offcanvas for tech -->
+                <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="techoffcanvas" aria-labelledby="techoffcanvasLabel">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="techoffcanvas{{ tech|replace(' ', '_') }}Label">Edit Technology</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <form method="POST" action="" novalidate>
+                            {{form.hidden_tag()}}
+                            {{Techforms.HiddenTechName(value=tech)}}
+                            <div class="modal-body">
+                                <fieldset class="">
+                                    {% for field in techeditfields %}
+                                        <div class="form">
+                                            <!-- <h6>{{Techforms[field].label}}</h6> -->
+                                            <!-- {% if field == "ChangeTechnologyName" %}
+                                                {{Techforms[field](class="form-control form-control-lg", value=tech )}} -->
+                                            <!-- {% elif field == "ChangeTechnologyDescription" %}
+                                                <textarea class="form-control form-control-lg" id="ChangeTechnologyDescription" name="ChangeTechnologyDescription">{{technology[tech][0]}}</textarea> -->
+                                            <!-- {% elif field == "ChangeTechnologyBackstory" %}
+                                                <textarea class="form-control form-control-lg" id="ChangeTechnologyBackstory" name="ChangeTechnologyBackstory">{{technology[tech][1]}}</textarea> -->
+                                            <!-- {% endif %} -->
+
+                                            {% if field == "ChangeTechnologyDescription" %}
+                                                <textarea class="form-control form-control-lg" id="ChangeTechnologyDescription" name="ChangeTechnologyDescription">{{technology[tech][0]}}</textarea>
+                                            {% endif %}
+
+                                        </div>
+                                    {% endfor %}
+                                </fieldset>
+                            </div>
+                            <div class="modal-footer mt-3">
+                                {{Techforms.submit_edit(class="btn btn-outline-info")}}
+                                <a href="/delete_tech/{{tech}}" class="btn btn-outline-info">Clear</a> / 
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
 
         {% if "Languages" in modules %}
             <!-- card -->
