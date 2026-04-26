@@ -100,3 +100,8 @@ const searchesElement = document.querySelector("[searches]")
 searchesArray = []
 
 console.log(searchesElement.children)
+
+
+function currshow() {
+    document.getElementById('nextcurrency').style.display='none'
+}

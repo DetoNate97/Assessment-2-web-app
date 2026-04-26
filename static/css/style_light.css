@@ -1,17 +1,20 @@
 /* testing class */
 .test {
+  /* margin-top: 1000px; */
   color: red;
   background-color: blue;
   border-color: green;
 }
 
+
+
 body {
-  background: #cccccc;
+  background: #e6e6e6;
   color: #000000;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  color: #ffffff;
+  color: #000000;
   margin: .5rem
 }
 
@@ -19,11 +22,42 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 20px;
 }
 
+.navbar {
+  background-color: #f7f7f7e0;
+  border-bottom: 3px solid #000000;
+  backdrop-filter: blur(5px);
+}
+
 .centred {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+.resizable {
+  width: 300px;
+  max-width: 1000px;
+  min-width: 100px;
+  height: 200px;
+  max-height: 1000px;
+  min-height: 100px;
+  overflow: auto;
+  resize: both;
+  border: 2px solid #141414;
+}
+.resizable img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.map{
+  border: 3px solid #00000000;
+  border-radius: 6px;
+}
+.map:hover {
+  border-color: #000000aa;
 }
 
 .welcomeprompt {
@@ -37,7 +71,7 @@ h1, h2, h3, h4, h5, h6 {
 .containerborder {
   padding: 20px;
   border-radius: 12px;
-  background: linear-gradient(#292929, #292929) padding-box, linear-gradient(0deg, #180060 45%, #009fb1) border-box;
+  background: linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(0deg, #180060 45%, #009fb1) border-box;
   border: 6px solid transparent;
 }
 
@@ -48,48 +82,64 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .modal-content {
-  color: #ffffff;
+  color: #000000;
   background-color: #292929;
 }
 
 .form-floating label {
-  color: #ffffff;
+  color: #000000;
+  
 }
 
 .form-floating input {
-  background-color: #292929;
-  color: #ffffff
+  background-color: #00000000;
+  color: #0c0c0c;
+  border: 2px, solid, #000000
 }
 
 .form-floating input:focus {
-  background-color: #292929;
-  color: #ffffff
+  background-color: #00000000;
+  color: #070707
 }
 
 .form label {
-  color: #ffffff;
+  color: #050505;
 }
 
 .form input {
-  background-color: #292929;
-  color: #ffffff
+  background-color: #00000000;
+  color: #0a0a0a;
+  border: 2px, solid, #000000
+}
+
+.form-control {
+  background-color: #00000000;
+  color: #080808;
+  border: 2px, solid, #000000
+}
+
+.form-control:focus {
+  background-color: #00000000;
+  color: #000000;
+  border: 2px, solid, #000000
 }
 
 .form ::placeholder {
-  color: #aaaaaa
+  color: #080808
 }
 
 .form input:focus {
-  background-color: #292929;
-  color: #ffffff
+  background-color: #00000000;
+  color: #131313
 }
 
 .form-worldnameset {
   width: 300px;
+  border: 2px, solid, #000000
 }
 
 .form-worldnamechange {
-  border-color: #292929;
+  border-color: #000000;
   display: inline-block;
   min-width: 134px; 
   max-width: 234px;
@@ -97,7 +147,23 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .form-worldnamechange:hover {
-  border-color: #aaaaaa
+  border: 2px solid f#000000
+}
+
+/* copilot because bootstrap is a pain */
+/* styles the file upload element */
+.form-fileupload {
+  color: #000000;
+  border-color: #000000;
+  padding: 8px 16px;
+  border-radius: 6px;
+  margin-right: 12px;
+  cursor: pointer;
+
+}
+input[type="file"]::file-selector-button {
+  background-color: #000000;
+  color: #ffffff;
 }
 
 .fit-content {
@@ -127,24 +193,29 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-worldnamechange {
-  border-color: #292929;
-  color: #aaaaaa;
+  border-color: #000000;
+  color: #000000;
 }
 
 .btn-worldnamechange:hover {
-  border-color: #595959;
-  color: #ffffff;
+  border-color: #000000;
+  color: #000000;
 }
 
 .button-padding {
   padding-block: 7px
 }
 
+.createbox {
+  background-color: #00000020;
+  border-radius: 10px;
+}
+
 .card {
-  color: #ffffff;
-  background-color: #393939;
+  color: #000000;
+  background-color: #c5c5c5;
   border-width: 2px;
-  border-color: #494949;
+  border-color: #000000;
   width: 100px;
   height: 100px;
   text-align: center;
@@ -153,12 +224,17 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center; 
 }
 
+.card-fitcontent {
+  width: fit-content;
+  height: fit-content;
+}
+
 .card-button-back {
-  color: #ffffff;
+  color: #000000;
   width: 100px;
   height: 100px; 
   padding: 0;
-  background-color: #39393900;
+  background-color: #ffffff00;
   border-width: 2px;
   appearance: none;
   border-style: none;
@@ -166,11 +242,11 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: center;
 }
 .card-btn {
-  color: #ffffff;
+  color: #000000;
   width: 100px;
   height: 100px; 
   padding: 0;
-  background-color: #39393900;
+  background-color: #ffffff00;
   border-width: 2px;
   appearance: none;
   border-style: none;
@@ -179,7 +255,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .card-CharCreator {
-  width: 200px;
+  width: 240px;
   height: fit-content;
   text-align: start;
   justify-content: start;
@@ -187,8 +263,98 @@ h1, h2, h3, h4, h5, h6 {
   padding: 0;
 }
 
+.card-LangCreator {
+  width: 250px;
+  height: fit-content;
+  text-align: start;
+  justify-content: start;
+  display:block;
+  padding: 0;
+}
+
+.card-CurrCreator {
+  width: 270px;
+  height: fit-content;
+  text-align: start;
+  justify-content: start;
+  display:block;
+  padding: 0;
+}
+.plat {
+  color: #128383
+}
+.gold {
+  color: #8a8a04
+}
+.silv {
+  color: #5f5f5f
+}
+.copp {
+  color: #9b4309
+}
+
+.card-MagCreator {
+  width: fit-content;
+  min-width: 240px;
+  height: fit-content;
+  text-align: start;
+  justify-content: start;
+  display:block;
+  padding: 0;
+}
+
+.card-TechCreator {
+  width: fit-content;
+  min-width: 230px;
+  height: fit-content;
+  text-align: start;
+  justify-content: start;
+  padding: 0;
+  display:flex;
+}
+
+.module-table {
+  margin: 0.5rem;
+}
+
+.module-table-cell {
+  border: 1px solid #0f0f0f;
+  max-width: 110px;
+  min-width: 110px;
+  padding: 0.25rem;
+}
+
+.offcanvas {
+  max-width: 230px;
+  background: #e9e9e9;
+  border: 3px, solid, #000000;
+
+}
+
+.btn-newchar {
+  width: 38px;
+  height: 38px;
+  padding-top: 5px;
+}
+
+.techedit {
+  border: 1px, solid, #0c0c0c;
+  padding: .5rem 1rem;
+  background-color: #00000000;
+  color: #000000;
+  min-height: 75px;
+  font-size: 1.25rem;
+  border-radius: var(--bs-border-radius-lg);
+  width: 200px;
+  margin: 1rem;
+  display: flex;
+  justify-self: center;
+  justify-content: start;
+  flex-direction: column;
+}
+
 .checkbox {
-  background-color: #292929;
+  background-color: #c5c5c5;
   transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out
 }
 
@@ -205,39 +371,43 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .link { 
-  color: #ffffff;
-  text-decoration: none
+  color: #1a1a1a;
+  text-decoration: none;
+}
+
+.link-bold {
+  font-weight: bold
 }
 
 .link:hover {
-  color: #ffffff;
+  color: #000000;
   text-decoration: underline
 }
 
 .link:active {
-  color: #ffffff;
+  color: #000000;
   text-decoration: none
 }
 
 .register-btn {
   padding: 8px;
   border: 4px solid transparent;
-  color: #e0e0e0
+  color: #000000
 }
 
 .register-btn:hover {
   padding: 8px;
   border: 4px solid transparent;
-  background: linear-gradient(#393939, #303030) padding-box, linear-gradient(0deg, #220070 45%, #10afc1) border-box;
-  color: #ffffff;
+  background: linear-gradient(#f8f8f8, #fafafa) padding-box, linear-gradient(0deg, #220070 45%, #10afc1) border-box;
+  color: #000000;
 }
 
 /* not sure why this needs to be :first-child:active instead of just :active but it works now ¯\_(ツ)_/¯*/
 .register-btn:first-child:active { 
   padding: 8px;
   border: 4px solid transparent;
-  background: linear-gradient(#292929, #292929) padding-box, linear-gradient(0deg, #180060 45%, #009fb1) border-box;
-  color: #ffffff;
+  background: linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(0deg, #180060 45%, #009fb1) border-box;
+  color: #000000;
 }
 
 .close-btn-danger {
@@ -276,14 +446,14 @@ h1, h2, h3, h4, h5, h6 {
   background: #d1e7dd;
 }
 
-.modal-close-btn {
-  filter: invert(1) grayscale(100%) brightness(200%);
+.btn-close {
+  filter: grayscale(100%) brightness(0%);
 }
 
 .btn-secondary {
-  color: #A9A9A9;
-  border-color: #A9A9A9;
-  background: #292929;
+  color: #000000;
+  border-color: #ffffff;
+  background: #f3f3f3;
 }
 
 .btn-secondary:hover {
@@ -299,11 +469,47 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
 }
 
+.alert {
+  margin: 0;
+}
+
 #flash {
   position: absolute;
   transition: top 0.6s ease-out;
   top: 0;
-  left: 10px;
+  margin-inline: 1%;
+}
+
+.accountform {
+  width: 300px;
+}
+
+.form-select {
+  background-color: #e4e2e2;
+  border-radius: 8px;
+  color: #000000;
+}
+
+.form-select:focus {
+  background-color: #ffffff;
+  border-radius: 8px;
+  color: #050505;
+}
+
+.form-select:hover {
+  background-color: #ffffff;
+  border-radius: 8px;
+  color: #000000;
+}
+
+.brand {
+  width: 40px;
+  height: 40px;
+}
+
+/* for search function: https://www.youtube.com/watch?v=TlP5WIxVirU */
+.hide {
+  display: none;
 }
 
 /* 

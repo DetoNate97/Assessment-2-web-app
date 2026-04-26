@@ -180,6 +180,24 @@ class LangForms(FlaskForm):
     submit_edit = SubmitField('Submit Changes')
     EditFields = ("ChangeLanguageName", "ChangeLanguageDescription", "ChangeLanguageBackstory")
 
+class CurrForms(FlaskForm):
+    CreateCurrencyPlatinum = StringField('Huge coin name')
+    CreateCurrencyGold = StringField('Large coin name')
+    CreateCurrencySilver = StringField('Medium coin name')
+    CreateCurrencyCopper = StringField('Small coin name')
+    CreateConversionRatio = StringField('Conversion Ratio')
+    CurrFields = ("CreateCurrencyPlatinum", "CreateCurrencyGold", "CreateCurrencySilver", "CreateCurrencyCopper", "CreateConversionRatio")
+    submit_create = SubmitField('Create Currency')
+
+    HiddenCurrName = StringField(render_kw={'style': 'display:none', 'value':'none'}) # for checking which character is being edited, since the name can be changed
+    ChangeCurrencyPlatinum = StringField('Huge coin name')
+    ChangeCurrencyGold = StringField('Large coin name')
+    ChangeCurrencySilver = StringField('Medium coin name')
+    ChangeCurrencyCopper = StringField('Small coin name')
+    ChangeConversionRatio = StringField('Conversion Ratio')
+    submit_edit = SubmitField('Submit Changes')
+    EditFields = ("ChangeCurrencyPlatinum", "ChangeCurrencyGold", "ChangeCurrencySilver", "ChangeCurrencyCopper", "ChangeConversionRatio")
+
 class MagForms(FlaskForm):
     CreateSpellName = StringField('Spell Name')
     CreateSpellDescription = TextAreaField('Spell Description')

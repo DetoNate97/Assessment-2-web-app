@@ -1,8 +1,7 @@
 from flask import Flask, render_template, url_for, redirect, flash, session
 from flask_login import login_user, logout_user # not used, but remember to use next time i need to make a login system
-from forms import RegisterForm, LoginForm, CustomSelectForm, ChangeWorldNameForm, CharForms, MapForm, AccountForm, LocForms, HistForms, FacForms, LawForms, CulForms, TechForms, LangForms, MagForms, QuestForms
+from forms import RegisterForm, LoginForm, CustomSelectForm, ChangeWorldNameForm, CharForms, MapForm, AccountForm, LocForms, HistForms, FacForms, LawForms, CulForms, TechForms, LangForms, CurrForms, MagForms, QuestForms
 import os, sqlite3, secrets, json, time
-from cryptography.fernet import Fernet
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
@@ -195,6 +194,8 @@ def home():
             data["technology"] = {"":["",""]}
         if "Languages" in modules:
             data["languages"] = {}
+        if "Currency" in modules:
+            data["currency"] = {"":["","","","10:1"]}
         if "Magic" in modules:
             data["magic"] = {}
         if "Quests" in modules:
@@ -358,6 +359,7 @@ def world(world_name):
     Culforms = CulForms()
     Techforms = TechForms()
     Langforms = LangForms()
+    Currforms = CurrForms()
     Magforms = MagForms()
     Questforms = QuestForms()
     Mapform = MapForm()
@@ -377,6 +379,8 @@ def world(world_name):
     techeditfields = Techforms.EditFields
     langfields = Langforms.LangFields
     langeditfields = Langforms.EditFields
+    currfields = Currforms.CurrFields
+    curreditfields = Currforms.EditFields
     magfields = Magforms.MagFields
     mageditfields = Magforms.EditFields
     questfields = Questforms.QuestFields
@@ -492,6 +496,18 @@ def world(world_name):
                 languages = i["languages"]
         data = []
 
+    currencies = []
+    if "Currency" in modules:
+        with open(user_worlds, "r") as file:
+            for line in file:
+                world = json.loads(line)
+                data.append(world)
+        for i in data:
+            if i["name"] == world_name:
+                currencies = i["currency"]
+        data = []
+
+
     spells = []
     if "Magic" in modules:
         with open(user_worlds, "r") as file:
@@ -584,6 +600,17 @@ def world(world_name):
         editlangdesc = Langforms.ChangeLanguageDescription.data
         editlangback = Langforms.ChangeLanguageBackstory.data
 
+        currplat = Currforms.CreateCurrencyPlatinum.data
+        currgold = Currforms.CreateCurrencyGold.data
+        currsilv = Currforms.CreateCurrencySilver.data
+        currcopp = Currforms.CreateCurrencyCopper.data
+        currconv = Currforms.CreateConversionRatio.data
+        editcurrplat = Currforms.ChangeCurrencyPlatinum.data
+        editcurrgold = Currforms.ChangeCurrencyGold.data
+        editcurrsilv = Currforms.ChangeCurrencySilver.data
+        editcurrcopp = Currforms.ChangeCurrencyCopper.data
+        editcurrconv = Currforms.ChangeConversionRatio.data
+        
         spellname = Magforms.CreateSpellName.data
         spelldesc = Magforms.CreateSpellDescription.data
         spellcost = Magforms.CreateSpellCost.data
@@ -667,6 +694,8 @@ def world(world_name):
                         for char in i['characters']:
                             if char == Charforms.HiddenCharName.data:
                                 i['characters'][char] = [editchardesc, editcharback]
+                                i['characters'][editcharname] = i['characters'].pop(char)
+
                 with open(user_worlds, 'w') as file:
                     for obj in data:
                         file.write(json.dumps(obj) + "\n")
@@ -705,6 +734,8 @@ def world(world_name):
                         for loc in i['locations']:
                             if loc == Locforms.HiddenLocName.data:
                                 i['locations'][loc] = [editlocfac, editloceco, editloccul, editloclang, editlocgov]
+                                i['locations'][editlocname] = i['locations'].pop(loc)
+
                 with open(user_worlds, 'w') as file:
                     for obj in data:
                         file.write(json.dumps(obj) + "\n")
@@ -743,6 +774,8 @@ def world(world_name):
                         for event in i['history']:
                             if event == Histforms.HiddenEventName.data:
                                 i['history'][event] = [editeventdesc, editeventback]
+                                i['history'][editeventname] = i['history'].pop(event)
+
                 with open(user_worlds, 'w') as file:
                     for obj in data:
                         file.write(json.dumps(obj) + "\n")
@@ -920,7 +953,45 @@ def world(world_name):
             else:
                 flash('make sure all fields are filled', 'danger')
                 return redirect(url_for("world", world_name=world_name))
+    
+        if currplat or currgold or currsilv or currcopp:
+            if currplat and currgold and currsilv and currcopp:
+                data = []
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        data.append(world)
+                for i in data:
+                    if i["name"] == world_name:
+                        i["currency"][currplat] = [currgold, currsilv, currcopp]
+                with open(user_worlds, 'w') as file:
+                    for obj in data:
+                        file.write(json.dumps(obj) + "\n")
+                return redirect(url_for("world", world_name=world_name))
+            else:
+                flash('make sure all fields are filled', 'danger')
+                return redirect(url_for("world", world_name=world_name))
             
+        if editcurrplat or editcurrgold or editcurrsilv or editcurrcopp or editcurrconv:
+            if editcurrplat and editcurrgold and editcurrsilv and editcurrcopp and editcurrconv:
+                data = []
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        world = json.loads(line)
+                        data.append(world)
+                for i in data:
+                    if i["name"] == world_name:
+                        for curr in i['currency']:
+                            if curr == Currforms.HiddenCurrName.data:
+                                i['currency'][curr] = [editcurrgold, editcurrsilv, editcurrcopp, editcurrconv]
+                with open(user_worlds, 'w') as file:
+                    for obj in data:
+                        file.write(json.dumps(obj) + "\n")
+                return redirect(url_for("world", world_name=world_name))
+            else:
+                flash('make sure all fields are filled', 'danger')
+                return redirect(url_for("world", world_name=world_name))
+
         if spellname or spelldesc or spellcost or spelldmg:
             if spellname and spelldesc and spellcost and spelldmg:
                 data = []
@@ -1030,7 +1101,7 @@ def world(world_name):
         # anyway make sure every combination of filled and unfilled fields has an outcome that doesnt crash
 
     # maybe i should add all the jinja variables to a list or smth so that it doesnt go all the way out there -->                                                                                                                                                                                                                                 
-    return render_template(f'world.html', world_name=world_name, current_user=current_user, modules=modules, form=form, Charforms=Charforms, Locforms=Locforms, Histforms=Histforms, Facforms=Facforms, Lawforms=Lawforms, Culforms=Culforms, Techforms=Techforms, Langforms=Langforms, Magforms=Magforms, Questforms=Questforms, Mapform=Mapform, charfields=charfields, chareditfields=chareditfields, characters=characters, locfields=locfields, loceditfields=loceditfields, locations=locations, histfields=histfields, histeditfields=histeditfields, events=events, facfields=facfields, faceditfields=faceditfields, factions=factions, lawfields=lawfields, laweditfields=laweditfields, laws=laws, culfields=culfields, culeditfields=culeditfields, cultures=cultures, techfields=techfields, techeditfields=techeditfields, technology=technology, langfields=langfields, langeditfields=langeditfields, languages=languages, magfields=magfields, mageditfields=mageditfields, spells=spells, questfields=questfields, questeditfields=questeditfields, quests=quests, ext=ext)
+    return render_template(f'world.html', world_name=world_name, current_user=current_user, modules=modules, form=form, Charforms=Charforms, Locforms=Locforms, Histforms=Histforms, Facforms=Facforms, Lawforms=Lawforms, Culforms=Culforms, Techforms=Techforms, Langforms=Langforms, Currforms=Currforms, Magforms=Magforms, Questforms=Questforms, Mapform=Mapform, charfields=charfields, chareditfields=chareditfields, characters=characters, locfields=locfields, loceditfields=loceditfields, locations=locations, histfields=histfields, histeditfields=histeditfields, events=events, facfields=facfields, faceditfields=faceditfields, factions=factions, lawfields=lawfields, laweditfields=laweditfields, laws=laws, culfields=culfields, culeditfields=culeditfields, cultures=cultures, techfields=techfields, techeditfields=techeditfields, technology=technology, langfields=langfields, langeditfields=langeditfields, languages=languages, currfields=currfields, curreditfields=curreditfields, currencies=currencies, magfields=magfields, mageditfields=mageditfields, spells=spells, questfields=questfields, questeditfields=questeditfields, quests=quests, ext=ext)
 
 @app.route('/delete_world/<world_name>', methods=['POST'])
 def delete_world(world_name):
@@ -1234,6 +1305,28 @@ def delete_lang(lang_name):
                 if lang != lang_name:
                     kept_langs[lang] = world['languages'][lang]
             world['languages'] = kept_langs
+    if data:
+        with open(user_worlds, 'w') as file:
+            for obj in data:
+                file.write(json.dumps(obj) + "\n")
+    return redirect(url_for("world", world_name=world_name))
+
+@app.route('/delete_curr/<curr_name>', methods=['GET', 'POST'])
+def delete_curr(curr_name):
+    user_worlds = session.get('user_worlds')
+    world_name = session.get('world_name')
+    data = []
+    kept_currs = {}
+    with open(user_worlds, "r") as file:
+        for line in file:
+            world = json.loads(line)
+            data.append(world)
+    for world in data:
+        if world['name'] == world_name:
+            for curr in world['currency']:
+                if curr != curr_name:
+                    kept_currs[curr] = world['currency'][curr]
+            world['currency'] = kept_currs
     if data:
         with open(user_worlds, 'w') as file:
             for obj in data:

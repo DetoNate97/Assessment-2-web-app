@@ -3,7 +3,7 @@
 {% block content %}
     <!-- for now the following section will seperately check if each module has been selected, and if it is, display the elements for the module to function. -->
     <!-- the reason these need to be seperate is because each module has a different function, so a loop wont work, at least with my current structure. -->
-    
+<!--     
     <label for="search">Search Content</label>
     <input type="search" id="search" content-search>
 
@@ -12,7 +12,7 @@
         <p>map</p>
         <p>char</p>
     </div>
-    
+     -->
     
     
     <div class="row">
@@ -363,12 +363,6 @@
                     </div>
                 </div>
             {% endfor %}
-        {% endif %}
-
-        {% if "Hierarchy" in modules %}
-            <div class="card m-1">
-                placeholder for Hierarchy module
-            </div>
         {% endif %}
 
         {% if "Factions" in modules %}
@@ -881,16 +875,73 @@
         {% endif %}
 
         {% if "Currency" in modules %}
-            <div class="card m-1">
-                placeholder for Currency module
-            </div>
-        {% endif %} 
+            <!-- card -->
+            <div class="card card-CurrCreator m-1 p-1" id="curr">
+                <div class="row m-1 justify-content-center">
+                    <h3 class="col ms-2 ps-0">Currency</h3>
+                    <div class="col">
+                        <a data-bs-toggle="offcanvas" data-bs-target="#curreditoffcanvas" href="#curreditoffcanvas" role="button" aria-controls="curreditoffcanvas" class="btn btn-outline-info">edit</a>
+                        <!-- <a class="btn btn-outline-info btn-newchar" data-bs-toggle="offcanvas" href="#curroffcanvas" role="button" aria-controls="offcanvas">+</a>
+                        <a class="btn btn-outline-info btn-newchar" data-bs-toggle="offcanvas" href="#curroffcanvas" role="button" aria-controls="offcanvas">-</a> -->
+                    </div>
+                </div>
+                <div class="mb-4">
+                    {% if currencies %}
+                        {% for curr in currencies %}
+                            <p class="p-0 m-1 plat">Huge: {{curr}}</p>
+                            <p class="p-0 m-1 gold">Large: {{currencies[curr][0]}}</p>
+                            <p class="p-0 m-1 silv">Medium: {{currencies[curr][1]}}</p>
+                            <p class="p-0 m-1 copp">Small: {{currencies[curr][2]}}</p>
+                            <p class="p-0 m-1">{{currencies[curr][3]}}</p>
 
-        {% if "Gameplay" in modules %}
-            <div class="card m-1">
-                placeholder for Gameplay module
+                            <!-- <a href="/delete_curr/{{curr}}" class="link link-bold">delete</a> -->
+                        {% endfor %}
+                    {% else %}
+                        <p> no currencies</p>
+                    {% endif %}
+                </div>
             </div>
-        {% endif %} 
+
+            {% for curr in currencies %}
+                <!-- editing offcanvas for {{curr}} -->
+                <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="curreditoffcanvas" aria-labelledby="curreditoffcanvasLabel">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="curreditoffcanvasLabel">Edit Currency</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <form method="POST" action="" novalidate>
+                            {{form.hidden_tag()}}
+                            {{Currforms.HiddenCurrName(value=curr)}}
+                            <div class="modal-body">
+                                <fieldset class="">
+                                    {% for field in curreditfields %}
+                                        <div class="form">
+                                            <h6>{{Currforms[field].label}}</h6>
+                                            {% if field == "ChangeCurrencyPlatinum" %}
+                                                {{Currforms[field](class="form-control form-control-lg", value=curr)}}
+                                            {% elif field == "ChangeCurrencyGold" %}
+                                                {{Currforms[field](class="form-control form-control-lg", value=currencies[curr][0])}}
+                                            {% elif field == "ChangeCurrencySilver" %}
+                                                {{Currforms[field](class="form-control form-control-lg", value=currencies[curr][1])}}
+                                            {% elif field == "ChangeCurrencyCopper" %}
+                                                {{Currforms[field](class="form-control form-control-lg", value=currencies[curr][2])}}
+                                            {% elif field == "ChangeConversionRatio" %}
+                                                {{Currforms[field](class="form-control form-control-lg", value=currencies[curr][3])}}
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </fieldset>
+                            </div>
+                            <div class="modal-footer mt-3">
+                                {{Currforms.submit_edit(class="btn btn-outline-info")}}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
 
         {% if "Magic" in modules %}
             <!-- card -->
@@ -1049,17 +1100,34 @@
                             <fieldset class="">
                                 {% for field in questfields %}
                                     <div class="form">
+
                                         <h6>{{Questforms[field].label}}</h6>
+
                                         {% if Questforms[field].errors %}
-                                            {{Questforms[field](class="form-select form-select-lg form-control form-control-lg is-invalid")}}
+
+                                            {% if field == "CreateQuestStart" or "CreateQuestFinish" %}
+                                                {{Questforms[field](class="form-select form-select-lg form-control form-control-lg is-invalid")}}
+                                            {% else %}
+                                                {{Questforms[field](class="form-control form-control-lg is-invalid")}}
+                                            {% endif %}
                                             <div class="invalid-feedback">
                                                 {% for error in errors %}
                                                     <span>{{error}}</span>
                                                 {% endfor %}
                                             </div>
+
                                         {% else %}
-                                            {{Questforms[field](class="form-select form-select-lg form-control form-control-lg")}}
+
+                                            {% if field == "CreateQuestStart" %}
+                                                {{Questforms[field](class="form-select form-select-lg form-control form-control-lg")}}
+                                            {% elif field == "CreateQuestFinish" %}
+                                                {{Questforms[field](class="form-select form-select-lg form-control form-control-lg")}}
+                                            {% else %}
+                                                {{Questforms[field](class="form-control form-control-lg")}}
+                                            {% endif %}
+
                                         {% endif %}
+
                                     </div>
                                 {% endfor %}
                             </fieldset>

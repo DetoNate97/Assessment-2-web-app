@@ -272,6 +272,27 @@ input[type="file"]::file-selector-button {
   padding: 0;
 }
 
+.card-CurrCreator {
+  width: 270px;
+  height: fit-content;
+  text-align: start;
+  justify-content: start;
+  display:block;
+  padding: 0;
+}
+.plat {
+  color: #aaffff
+}
+.gold {
+  color: #ffffaa
+}
+.silv {
+  color: #aaaaaa
+}
+.copp {
+  color: #ffccaa
+}
+
 .card-MagCreator {
   width: fit-content;
   min-width: 240px;
@@ -311,8 +332,8 @@ input[type="file"]::file-selector-button {
 }
 
 .btn-newchar {
-  max-width: 38px;
-  max-height: 38px;
+  width: 38px;
+  height: 38px;
   padding-top: 5px;
 }
 
@@ -481,6 +502,10 @@ input[type="file"]::file-selector-button {
   color: #ffffff;
 }
 
+.brand {
+  width: 40px;
+  height: 40px;
+}
 
 /* for search function: https://www.youtube.com/watch?v=TlP5WIxVirU */
 .hide {
