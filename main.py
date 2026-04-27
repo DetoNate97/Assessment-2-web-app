@@ -146,26 +146,28 @@ def home():
             world_name = "New_World"
             check = False
             world_num = 0
-
-            for world in data:
-                if world["name"] == "New_World":
-                    check=False
-                
-            while check != True:
+            if data:
                 for world in data:
-                    if world["name"] == world_name:
-                        world_num += 1
-                        world_name = f"New_World_{world_num}"
-                    else:
-                        check=True
+                    if world["name"] == "New_World":
+                        check=False
                     
+                while check != True:
+                    for world in data:
+                        if world["name"] == world_name:
+                            world_num += 1
+                            world_name = f"New_World_{world_num}"
+                        else:
+                            check=True
+            else:
+                check = True
         else:
-            for world in data:
-                if form.worldnamefield.data != world["name"]:
-                    pass
-                else:
-                    flash('name already exists', 'danger')
-                    return redirect(url_for("home"))
+            if data:
+                for world in data:
+                    if form.worldnamefield.data != world["name"]:
+                        pass
+                    else:
+                        flash('name already exists', 'danger')
+                        return redirect(url_for("home"))
             world_name = form.worldnamefield.data
         # record the selected modules:
         modules = []
@@ -314,6 +316,28 @@ def create_new_book():
     world_name = "New_Book"
     data = {"name": world_name, "modules": modules}
     data["characters"] = {}
+    if "CharCreator" in modules:
+        data["characters"] = {}
+    if "Locations" in modules:
+        data["locations"] = {}
+    if "Historical" in modules:
+        data["history"] = {}
+    if "Factions" in modules:
+        data["factions"] = {}
+    if "Laws" in modules:
+        data["laws"] = {}
+    if "Cultures" in modules:
+        data["cultures"] = {}
+    if "Technology" in modules:
+        data["technology"] = {"":["",""]}
+    if "Languages" in modules:
+        data["languages"] = {}
+    if "Currency" in modules:
+        data["currency"] = {"":["","","","10:1"]}
+    if "Magic" in modules:
+        data["magic"] = {}
+    if "Quests" in modules:
+        data["quests"] = {}
     with open(user_worlds, "a") as file:
         file.write(json.dumps(data) + "\n")
     return redirect(url_for('world', world_name=world_name))
@@ -333,6 +357,29 @@ def create_new_movie():
     world_name = "New_Movie"
     data = {"name": world_name, "modules": modules}
     data["characters"] = {}
+    if "CharCreator" in modules:
+        data["characters"] = {}
+    if "Locations" in modules:
+        data["locations"] = {}
+    if "Historical" in modules:
+        data["history"] = {}
+    if "Factions" in modules:
+        data["factions"] = {}
+    if "Laws" in modules:
+        data["laws"] = {}
+    if "Cultures" in modules:
+        data["cultures"] = {}
+    if "Technology" in modules:
+        data["technology"] = {"":["",""]}
+    if "Languages" in modules:
+        data["languages"] = {}
+    if "Currency" in modules:
+        data["currency"] = {"":["","","","10:1"]}
+    if "Magic" in modules:
+        data["magic"] = {}
+    if "Quests" in modules:
+        data["quests"] = {}
+
     with open(user_worlds, "a") as file:
         file.write(json.dumps(data) + "\n")
     return redirect(url_for('world', world_name=world_name))
@@ -353,6 +400,28 @@ def create_new_game():
     world_name = "New_Game"
     data = {"name": world_name, "modules": modules}
     data["characters"] = {}
+    if "CharCreator" in modules:
+        data["characters"] = {}
+    if "Locations" in modules:
+        data["locations"] = {}
+    if "Historical" in modules:
+        data["history"] = {}
+    if "Factions" in modules:
+        data["factions"] = {}
+    if "Laws" in modules:
+        data["laws"] = {}
+    if "Cultures" in modules:
+        data["cultures"] = {}
+    if "Technology" in modules:
+        data["technology"] = {"":["",""]}
+    if "Languages" in modules:
+        data["languages"] = {}
+    if "Currency" in modules:
+        data["currency"] = {"":["","","","10:1"]}
+    if "Magic" in modules:
+        data["magic"] = {}
+    if "Quests" in modules:
+        data["quests"] = {}
     with open(user_worlds, "a") as file:
         file.write(json.dumps(data) + "\n")
     return redirect(url_for('world', world_name=world_name))
@@ -364,7 +433,7 @@ def world(world_name):
     instead of somehow creating an individual html file for each world, this instead is a single file that gets all the data for the world and displays it.
 
     parameters:
-    world name: ............................ activate dem neurons
+    world name: the name of the world. also used for files related 
 
     returns:
     a rendered html
