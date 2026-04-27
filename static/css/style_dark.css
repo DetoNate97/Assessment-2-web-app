@@ -505,6 +505,11 @@ input[type="file"]::file-selector-button {
 .brand {
   width: 40px;
   height: 40px;
+  filter: invert(100%);
+}
+
+.navbar-brand {
+  color: #ffffff
 }
 
 /* for search function: https://www.youtube.com/watch?v=TlP5WIxVirU */
