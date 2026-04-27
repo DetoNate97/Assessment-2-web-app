@@ -83,7 +83,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .modal-content {
   color: #000000;
-  background-color: #292929;
+  background-color: #ffffff;
 }
 
 .form-floating label {
@@ -506,6 +506,25 @@ input[type="file"]::file-selector-button {
   width: 40px;
   height: 40px;
 }
+
+.btn-outline-info {
+  border: 2px, solid, #000000;
+  color: #000000
+}
+
+.btn-outline-info:hover {
+  border: 2px, solid, #000000;
+  color: #000000
+}
+
+.btn-outline-info:focus {
+  border: 2px, solid, #000000;
+  color: #000000
+}
+
+.btn
+
+.btn
 
 /* for search function: https://www.youtube.com/watch?v=TlP5WIxVirU */
 .hide {

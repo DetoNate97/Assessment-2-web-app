@@ -224,10 +224,33 @@ def settings():
     default = {"Username": current_user, "Email": email}
     if form.validate_on_submit():
         if form.Username.data:
+            current_user = session.get('current_user')
+
+            data = []
+            filetypes = session.get('filetypes')
+            user_worlds = session.get('user_worlds')
+            try:
+                with open(user_worlds, "r") as file:
+                    for line in file:
+                        data.append(json.loads(line))
+            except:
+                pass
+            for i in data:
+                world_name = i["name"]
+                for type in filetypes:
+                    file = os.path.join(app.config['MAPS_FOLDER'], f"{current_user}_{world_name}_map.{type}")
+                    if os.path.exists(file):
+                        os.rename(file, os.path.join(app.config['MAPS_FOLDER'], f"{form.Username.data}_{world_name}_map.{type}"))
+            
+            file=os.path.join("database", f"{current_user}_worlds.ndjson")
+            if os.path.exists(file):
+                os.rename(file, os.path.join("database", f"{form.Username.data}_worlds.ndjson"))
+
             cursor = DB.cursor()
             cursor.execute("UPDATE Users SET username=? WHERE username=?", [form.Username.data, current_user])
             DB.commit()
             session['current_user'] = form.Username.data
+
         if form.Email.data:
             cursor = DB.cursor()
             cursor.execute("UPDATE Users SET email=? WHERE username=?", [form.Email.data, current_user])
@@ -286,7 +309,7 @@ def create_new_book():
     a redirect to the world
     '''
     user_worlds = session.get('user_worlds')
-    modules = ['CharCreator', 'Historical', 'Maps', 'Locations', 'Hierarchy', 'Factions', 'Laws', 'Cultures', 'Technology', 'Languages', 'Currency'] # set the preset modules
+    modules = ['CharCreator', 'Historical', 'Maps', 'Locations', 'Factions', 'Laws', 'Cultures', 'Technology', 'Languages', 'Currency'] # set the preset modules
     session['world_modules'] = modules
     world_name = "New_Book"
     data = {"name": world_name, "modules": modules}
@@ -305,7 +328,7 @@ def create_new_movie():
     a redirect to the world
     '''
     user_worlds = session.get('user_worlds')
-    modules = ['CharCreator', 'Historical', 'Maps', 'Locations', 'Hierarchy', 'Factions', 'Laws', 'Cultures', 'Technology', 'Languages', 'Currency'] # set the preset modules
+    modules = ['CharCreator', 'Historical', 'Maps', 'Locations', 'Factions', 'Laws', 'Cultures', 'Technology', 'Languages', 'Currency'] # set the preset modules
     session['world_modules'] = modules
     world_name = "New_Movie"
     data = {"name": world_name, "modules": modules}
@@ -325,7 +348,7 @@ def create_new_game():
     a redirect to the world
     '''
     user_worlds = session.get('user_worlds')
-    modules = ["CharCreator", "Historical", "Maps", "Locations", "Hierarchy", "Factions", "Laws", "Cultures", "Technology", "Languages", "Currency", "Gameplay", "Magic", "Quests"] # set the preset modules
+    modules = ["CharCreator", "Historical", "Maps", "Locations", "Factions", "Laws", "Cultures", "Technology", "Languages", "Currency", "Magic", "Quests"] # set the preset modules
     session['world_modules'] = modules
     world_name = "New_Game"
     data = {"name": world_name, "modules": modules}

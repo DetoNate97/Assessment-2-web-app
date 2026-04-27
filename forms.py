@@ -24,27 +24,25 @@ class CustomSelectForm(FlaskForm):
     # characters:
     CharCreator = BooleanField('Character Creator', default="checked")
     # setting
-    Historical = BooleanField('Historical Events and Folklore')
+    Historical = BooleanField('Historical Events and Folklore', default="checked")
     Maps = BooleanField('Maps', default="checked")
-    Locations = BooleanField('Locations')
-    Hierarchy = BooleanField('Hierarchy System')
-    Factions = BooleanField('Factions and Aliances')
-    Laws = BooleanField('Laws')
-    Cultures = BooleanField('Cultures')
-    Technology = BooleanField('Technological Advancements')
-    Languages = BooleanField('Languages')
-    Currency = BooleanField('Currency System')
+    Locations = BooleanField('Locations', default="checked")
+    Factions = BooleanField('Factions and Aliances', default="checked")
+    Laws = BooleanField('Laws', default="checked")
+    Cultures = BooleanField('Cultures', default="checked")
+    Technology = BooleanField('Technological Advancements', default="checked")
+    Languages = BooleanField('Languages', default="checked")
+    Currency = BooleanField('Currency System', default="checked")
     # gameplay
-    Gameplay = BooleanField('Gameplay Mechanics')
-    Magic = BooleanField('Magic System')
-    Quests = BooleanField('Player Interactions and Quests')
+    Magic = BooleanField('Magic System', default="checked")
+    Quests = BooleanField('Player Interactions and Quests', default="checked")
 
     submit = SubmitField('Create World')
 
     CharacterFields = ("CharCreator",)
-    SettFields = ("Historical", "Maps", "Locations", "Hierarchy", "Factions", "Laws", "Cultures", "Technology", "Languages", "Currency")
-    GameplayFields = ("Gameplay", "Magic", "Quests")
-    fields = ("CharCreator", "Historical", "Maps", "Locations", "Hierarchy", "Factions", "Laws", "Cultures", "Technology", "Languages", "Currency", "Gameplay", "Magic", "Quests")
+    SettFields = ("Maps", "Locations", "Factions", "Laws", "Cultures", "Technology", "Languages", "Currency")
+    GameplayFields = ("Magic", "Quests")
+    fields = ("CharCreator", "Historical", "Maps", "Locations", "Factions", "Laws", "Cultures", "Technology", "Languages", "Currency", "Magic", "Quests")
     # fields are split bc there are subheadings
 
 class ChangeWorldNameForm(FlaskForm):

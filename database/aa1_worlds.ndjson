@@ -1,0 +1,1 @@
+{"name": "world1", "modules": ["CharCreator", "Maps", "Locations", "Factions", "Laws", "Cultures", "Technology", "Languages", "Currency", "Magic", "Quests"], "characters": {}, "locations": {}, "factions": {}, "laws": {}, "cultures": {}, "technology": {"": ["", ""]}, "languages": {}, "currency": {"": ["", "", "", "10:1"]}, "magic": {}, "quests": {}}
