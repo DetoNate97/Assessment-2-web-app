@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_hex(16)
-app.config['MAPS_FOLDER'] = os.path.join("static", "maps")
+app.config['MAPS_FOLDER'] = os.path.join("static", "maps")  
 
 # database file path:
 db_path = os.path.join("database", "database.db")
@@ -55,7 +55,7 @@ def login():
         # get submitted data:
         log_user, log_pass = str(form.FloatingUsername.data), str(form.FloatingPassword.data) 
         # get stored password:
-        db_data = DB.execute("SELECT password FROM Users WHERE username = ?", [log_user]).fetchall() # db_data is in the format [("password")]. why, sql, why.
+        db_data = DB.execute("SELECT password FROM Users WHERE username = ?", [log_user]).fetchall() # db_data is in the format [("password",)]. why, sql, why.
         # check if there is a stored password:
         if not db_data: 
             flash(f'Failed to log in, user {log_user} does not exist', 'danger')
@@ -124,11 +124,8 @@ def home():
     page = "home"
     data = []
 
-
-    # temporary
-    filetypes = ['jpg', 'png', 'webp', 'jpeg', 'jfif', 'avif', 'gif'] # valid filetypes for map uploads. i should just make this a const like DB
+    filetypes = ['jpg', 'png', 'webp', 'jpeg', 'jfif', 'avif', 'gif'] # valid filetypes for map uploads.
     session['filetypes'] = filetypes
-
 
     # attempt to open the stored worlds. if there is no file it means there are no stored worlds.
     try:
@@ -298,7 +295,7 @@ def open_world(world_name):
             modules = i["modules"]
             pass # for some reason pass works here but the one to change name needs break
     session['world_modules'] = modules
-    session['world_name'] = world_name # added for delete char. probably would have been useful for other stuff earlier.
+    session['world_name'] = world_name
     return redirect(url_for('world', world_name=world_name))
 
 @app.route('/create_new_book', methods=['POST'])
@@ -502,7 +499,7 @@ def world(world_name):
                 characters = i["characters"]
         data = []
     
-
+    # gets the characters and sets them as the options for the quest module.
     questoptions = ["",]
     for char in characters:
         questoptions.append(char)
@@ -624,7 +621,6 @@ def world(world_name):
     
     # if the form is submitted, check which fields have been filled
     if form.validate_on_submit():
-        # this section is really long so i added big gaps
         # since there are many forms on this one page, it needs to check which one was filled and submitted
 
         #
@@ -1182,15 +1178,11 @@ def world(world_name):
             file.save(filepath)
             return redirect(url_for("world", world_name=world_name))       
 
-        
         # 
         # if none of the other if statements are met
         # 
         else:
             flash("please fill a field", "danger")
-        # why do these if statements act like elif statements?
-        # FIGURED IT OUT: EACH SUBMIT ONLY SUBMITS ITS OWN FIELDS, SO ALL THE OTHERS ARE EMPTY EVEN IF THEY HAVE DATA
-        # anyway make sure every combination of filled and unfilled fields has an outcome that doesnt crash
 
     # maybe i should add all the jinja variables to a list or smth so that it doesnt go all the way out there -->                                                                                                                                                                                                                                 
     return render_template(f'world.html', world_name=world_name, current_user=current_user, modules=modules, form=form, Charforms=Charforms, Locforms=Locforms, Histforms=Histforms, Facforms=Facforms, Lawforms=Lawforms, Culforms=Culforms, Techforms=Techforms, Langforms=Langforms, Currforms=Currforms, Magforms=Magforms, Questforms=Questforms, Mapform=Mapform, charfields=charfields, chareditfields=chareditfields, characters=characters, locfields=locfields, loceditfields=loceditfields, locations=locations, histfields=histfields, histeditfields=histeditfields, events=events, facfields=facfields, faceditfields=faceditfields, factions=factions, lawfields=lawfields, laweditfields=laweditfields, laws=laws, culfields=culfields, culeditfields=culeditfields, cultures=cultures, techfields=techfields, techeditfields=techeditfields, technology=technology, langfields=langfields, langeditfields=langeditfields, languages=languages, currfields=currfields, curreditfields=curreditfields, currencies=currencies, magfields=magfields, mageditfields=mageditfields, spells=spells, questfields=questfields, questeditfields=questeditfields, quests=quests, ext=ext)
@@ -1200,6 +1192,8 @@ def delete_world(world_name):
     '''
     copilot helped
     how to delete a dictionary from ndjson
+
+    deletes the world from the user's ndjson file.
     '''
 
     ext = session.get('ext')
@@ -1226,7 +1220,6 @@ def delete_world(world_name):
         for obj in data:
             file.write(json.dumps(obj) + "\n")
     # thus all the lines that meet the condition are not written back into the json, and are therefore deleted.
-    # damn im bringing english into this now
 
     return redirect(url_for('home'))
 
